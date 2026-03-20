@@ -1,0 +1,44 @@
+PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
+PREFIX dfc-ext: <https://www.w3.org/dfc-ext/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT DISTINCT
+  ?lnkFile ?lnkTargetPath ?lnkShortcutCreated ?lnkTargetCreated ?mftSiCreated ?mftFnCreated
+WHERE {
+  {
+    SELECT DISTINCT ?entryNum ?lnkFile ?lnkTargetPath ?lnkTargetCreated ?lnkShortcutCreated
+    WHERE {
+      GRAPH <http://example.org/lnk_case11> {
+        ?lnkFacet a dfc-ext:LnkFacet ;
+                  dfc-ext:targetMftEntryNumber ?entryNum ;
+                  dfc-ext:targetCreatedTime ?lnkTargetCreated ;
+                  dfc-ext:targetFilePath ?lnkTargetPath .
+        ?lnkFile core:hasFacet ?lnkFacet .
+        OPTIONAL {
+          ?lnkFile core:hasFacet ?lf .
+          ?lf a observable:FileFacet ;
+              observable:observableCreatedTime ?lnkShortcutCreated .
+        }
+      }
+    }
+  }
+
+  GRAPH <http://example.org/mft_case11> {
+    ?mftFacet a dfc-ext:MftFacet ;
+              dfc-ext:entryNumber ?entryNum ;
+              dfc-ext:created0x10 ?mftSiCreated ;
+              dfc-ext:created0x30 ?mftFnCreated .
+  }
+
+  # LNK shortcut time differs from MFT $SI
+  FILTER(BOUND(?lnkShortcutCreated) && ?lnkShortcutCreated != ?mftSiCreated)
+
+  # Optional correlation to $FN (seconds-level match or small tolerance); if $FN missing, keep the row
+  FILTER(
+    !BOUND(?mftFnCreated)
+    ||
+    ABS(bif:datediff('second', ?lnkShortcutCreated, ?mftFnCreated)) <= 2
+  )
+}
+ORDER BY ?lnkFile

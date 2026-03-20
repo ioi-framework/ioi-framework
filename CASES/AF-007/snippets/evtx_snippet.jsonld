@@ -1,0 +1,27 @@
+{
+  "@id": "kb:evtx-entry--6b02a8f1-511e-46c2-be37-ddff9f52f248",
+  "@type": "observable:EventRecord",
+  "core:hasFacet": [
+    {
+      "@id": "kb:evtx-entry-standard-facet--6b02a8f1-511e-46c2-be37-ddff9f52f248",
+      "@type": [
+        "observable:EventRecordFacet",
+        "core:Facet"
+      ],
+      "observable:eventID": "1102",
+      "observable:startTime": {
+        "@type": "xsd:dateTime",
+        "@value": "2025-09-11T05:57:31.8483911+00:00"
+      },
+      "observable:eventRecordText": "Event log cleared"
+    },
+    {
+      "@id": "kb:evtx-entry-custom-facet--6b02a8f1-511e-46c2-be37-ddff9f52f248",
+      "@type": [
+        "dfc-ext:EventLogFacet",
+        "core:Facet"
+      ],
+      "dfc-ext:channel": "Security"
+    }
+  ]
+}

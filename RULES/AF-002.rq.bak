@@ -1,0 +1,43 @@
+PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
+PREFIX dfc-ext: <https://www.w3.org/dfc-ext/>
+
+SELECT DISTINCT ?domain ?mft_file ?usn_evidence
+WHERE {
+  {
+    SELECT DISTINCT ?domain ?mft_file
+    WHERE {
+      GRAPH <http://example.org/mft_case2> {
+        { ?facet dfc-ext:parentPath ?path . FILTER(CONTAINS(?path, "IndexedDB")) }
+        UNION
+        { ?facet observable:filePath ?path . FILTER(CONTAINS(?path, "IndexedDB")) }
+        BIND(STRBEFORE(STRAFTER(?path, "https_www."), "_") AS ?domain)
+        FILTER(?domain != "")
+        BIND(?path AS ?mft_file)
+      }
+      FILTER NOT EXISTS {
+        GRAPH <http://example.org/history_case2> {
+          ?url_facet observable:fullValue ?url_value .
+          FILTER(CONTAINS(?url_value, ?domain))
+        }
+      }
+    }
+  }
+
+  GRAPH <http://example.org/usn_case2> {
+    ?usn_file a observable:File ;
+              core:hasFacet ?usn_file_facet, ?usn_facet .
+    ?usn_file_facet a observable:FileFacet ;
+                    observable:fileName ?usn_filename .
+    ?usn_facet a dfc-ext:UsnFacet ;
+               dfc-ext:updateReasons ?update_reasons .
+    FILTER(?usn_filename = "History")
+    FILTER(
+      CONTAINS(?update_reasons, "DataTruncation") ||
+      CONTAINS(?update_reasons, "DataOverwrite") ||
+      CONTAINS(?update_reasons, "DataExtend")
+    )
+    BIND(?update_reasons AS ?usn_evidence)
+  }
+}
+ORDER BY ?domain

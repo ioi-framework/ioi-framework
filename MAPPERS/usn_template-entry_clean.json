@@ -1,0 +1,58 @@
+[
+  {
+    "@id": "kb:usn-entry--{ENTRY_UUID}",
+    "@type": "observable:File",
+    "core:hasFacet": [
+      {
+        "@id": "kb:usn-entry-file-facet--{ENTRY_UUID}",
+        "@type": "observable:FileFacet",
+        "observable:fileName": "{FILE_NAME}",
+        "observable:extension": "{FILE_EXTENSION}",
+        "observable:filePath": "{FILE_PATH}",
+        "observable:modifiedTime": {
+          "@type": "xsd:dateTime",
+          "@value": "{UPDATE_TIMESTAMP}"
+        }
+      },
+      {
+        "@id": "kb:usn-entry-custom-facet--{ENTRY_UUID}",
+        "@type": [
+          "dfc-ext:UsnFacet",
+          "core:Facet"
+        ],
+        "dfc-ext:entryNumber": {
+          "@type": "xsd:integer",
+          "@value": "{ENTRY_NUMBER}"
+        },
+        "dfc-ext:sequenceNumber": {
+          "@type": "xsd:integer",
+          "@value": "{SEQUENCE_NUMBER}"
+        },
+        "dfc-ext:parentEntryNumber": {
+          "@type": "xsd:integer",
+          "@value": "{PARENT_ENTRY_NUMBER}"
+        },
+        "dfc-ext:parentSequenceNumber": {
+          "@type": "xsd:integer",
+          "@value": "{PARENT_SEQUENCE_NUMBER}"
+        },
+        "dfc-ext:parentPath": "{PARENT_PATH}",
+        "dfc-ext:updateSequenceNumber": {
+          "@type": "xsd:integer",
+          "@value": "{UPDATE_SEQUENCE_NUMBER}"
+        },
+        "dfc-ext:updateTimestamp": {
+          "@type": "xsd:dateTime",
+          "@value": "{UPDATE_TIMESTAMP}"
+        },
+        "dfc-ext:updateReasons": "{UPDATE_REASONS}",
+        "dfc-ext:fileAttributes": "{FILE_ATTRIBUTES}",
+        "dfc-ext:offsetToData": {
+          "@type": "xsd:integer",
+          "@value": "{OFFSET_TO_DATA}"
+        },
+        "dfc-ext:sourceFile": "{SOURCE_FILE}"
+      }
+    ]
+  }
+]

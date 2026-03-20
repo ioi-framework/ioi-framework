@@ -1,0 +1,33 @@
+{
+  "@id": "kb:lnk-entry--67128df2-5425-402d-937f-d1058e7746a2",
+  "@type": "observable:File",
+  "core:hasFacet": [
+    {
+      "@id": "kb:lnk-facet--67128df2-5425-402d-937f-d1058e7746a2",
+      "@type": [
+        "core:Facet",
+        "dfc-ext:WindowsLnkFacet"
+      ],
+      "dfc-ext:targetMftEntryNumber": {
+        "@type": "xsd:integer",
+        "@value": 54
+      },
+      "dfc-ext:targetCreatedTime": {
+        "@type": "xsd:dateTime",
+        "@value": "2025-01-31T00:47:42Z"
+      },
+      "dfc-ext:targetFilePath": "C:\\Users\\ktams\\Desktop\\Results\\Before\\!SBECmd_Messages.txt"
+    },
+    {
+      "@id": "kb:lnk-entry-file-facet--67128df2-5425-402d-937f-d1058e7746a2",
+      "@type": [
+        "core:Facet",
+        "observable:FileFacet"
+      ],
+      "observable:observableCreatedTime": {
+        "@type": "xsd:dateTime",
+        "@value": "2025-01-31T00:47:58Z"
+      }
+    }
+  ]
+}

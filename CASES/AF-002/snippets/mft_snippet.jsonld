@@ -1,0 +1,19 @@
+{
+  "@id": "kb:mft-entry--726b9a18-2ef3-40af-b696-4faeb8631efb",
+  "@type": "observable:File",
+  "core:hasFacet": [
+    {
+      "@id": "kb:mft-entry-custom-facet--726b9a18-2ef3-40af-b696-4faeb8631efb",
+      "@type": [
+        "dfc-ext:MftFacet",
+        "core:Facet"
+      ],
+      "dfc-ext:parentPath": ".\\Users\\resea\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\IndexedDB"
+    },
+    {
+      "@id": "kb:mft-entry-file-facet--726b9a18-2ef3-40af-b696-4faeb8631efb",
+      "@type": "observable:FileFacet",
+      "observable:filePath": ".\\Users\\resea\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\IndexedDBhttps_www.reddit.com_0.indexeddb.leveldb"
+    }
+  ]
+}

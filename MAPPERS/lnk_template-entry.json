@@ -1,0 +1,63 @@
+[
+    {
+        "@id": "kb:lnk-entry--{ENTRY_UUID}",
+        "@type": "observable:File",
+        "core:hasFacet": [
+            {
+                "@id": "kb:lnk-entry-file-facet--{ENTRY_UUID}",
+                "@type": "observable:FileFacet",
+                "observable:fileName": "",
+                "observable:filePath": "",
+                "observable:extension": ".lnk",
+                "observable:isDirectory": false,
+                "observable:sizeInBytes": {
+                    "@type": "xsd:integer",
+                    "@value": 0
+                },
+                "observable:accessedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": ""
+                },
+                "observable:observableCreatedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": ""
+                },
+                "observable:modifiedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": ""
+                }
+            },
+            {
+                "@id": "kb:lnk-entry-lnk-facet--{ENTRY_UUID}",
+                "@type": "dfc-ext:LnkFacet",
+                "dfc-ext:targetFilePath": "",
+                "dfc-ext:targetFileName": "",
+                "dfc-ext:targetCreatedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": ""
+                },
+                "dfc-ext:targetModifiedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": ""
+                },
+                "dfc-ext:targetAccessedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": ""
+                },
+                "dfc-ext:relativePath": "",
+                "dfc-ext:workingDirectory": "",
+                "dfc-ext:arguments": "",
+                "dfc-ext:targetMftEntryNumber": {
+                    "@type": "xsd:integer",
+                    "@value": 0
+                },
+                "dfc-ext:targetMftSequenceNumber": {
+                    "@type": "xsd:integer",
+                    "@value": 0
+                },
+                "dfc-ext:machineId": "",
+                "dfc-ext:machineMacAddress": ""
+            }
+        ]
+    }
+]

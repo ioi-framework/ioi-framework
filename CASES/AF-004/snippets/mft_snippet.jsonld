@@ -1,0 +1,21 @@
+{
+  "@id": "kb:mft-entry--60501edc-79a7-4823-b37f-5c5b1928899b",
+  "@type": "observable:File",
+  "core:hasFacet": [
+    {
+      "@id": "kb:mft-entry-file-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
+      "@type": "observable:FileFacet",
+      "observable:fileName": "tracking.log",
+      "observable:filePath": ".\\System Volume Informationtracking.log"
+    },
+    {
+      "@id": "kb:mft-entry-custom-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
+      "@type": [
+        "dfc-ext:MftFacet",
+        "core:Facet"
+      ],
+      "dfc-ext:parentPath": ".\\System Volume Information",
+      "dfc-ext:fileName": "tracking.log"
+    }
+  ]
+}

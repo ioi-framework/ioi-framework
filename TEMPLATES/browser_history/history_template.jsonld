@@ -1,0 +1,61 @@
+{
+  "@context": {
+    "@vocab": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "kb": "http://example.org/kb/"
+  },
+  "@graph": [
+    {
+      "@id": "kb:url-history-entry--{URL_ID}",
+      "@type": "observable:URLHistoryEntry",
+      "uco-core:hasFacet": [
+        {
+          "@type": "observable:URLHistoryFacet",
+          "observable:url": "{URL}",
+          "observable:pageTitle": "{TITLE}",
+          "observable:visitCount": {
+            "@type": "xsd:nonNegativeInteger",
+            "@value": "{VISIT_COUNT}"
+          },
+          "observable:manuallyEnteredCount": {
+            "@type": "xsd:nonNegativeInteger",
+            "@value": "{TYPED_COUNT}"
+          },
+          "observable:lastVisit": {
+            "@type": "xsd:dateTime",
+            "@value": "{LAST_VISIT_DATETIME}"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "kb:url-visit--{VISIT_ID}",
+      "@type": "observable:URLVisit",
+      "uco-core:hasFacet": [
+        {
+          "@type": "observable:URLVisitFacet",
+          "observable:url": {
+            "@id": "kb:url-history-entry--{URL_FK}"
+          },
+          "observable:visitTime": {
+            "@type": "xsd:dateTime",
+            "@value": "{VISIT_DATETIME}"
+          },
+          "observable:visitDuration": {
+            "@type": "xsd:duration",
+            "@value": "PT{VISIT_DURATION_SECONDS}S"
+          },
+          "observable:urlTransitionType": {
+            "@type": "xsd:string",
+            "@value": "{TRANSITION}"
+          },
+          "observable:fromURLVisit": {
+            "@id": "kb:url-visit--{FROM_VISIT}"
+          }
+        }
+      ]
+    }
+  ]
+}

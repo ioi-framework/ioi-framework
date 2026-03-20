@@ -1,0 +1,23 @@
+{
+  "@id": "kb:usn-entry--e08bd84a-ce50-422f-8d2f-debda1a1e4c7",
+  "@type": "observable:File",
+  "core:hasFacet": [
+    {
+      "@id": "kb:usn-entry-file-facet--e08bd84a-ce50-422f-8d2f-debda1a1e4c7",
+      "@type": "observable:FileFacet",
+      "observable:fileName": "Security.evtx"
+    },
+    {
+      "@id": "kb:usn-entry-custom-facet--e08bd84a-ce50-422f-8d2f-debda1a1e4c7",
+      "@type": [
+        "dfc-ext:UsnFacet",
+        "core:Facet"
+      ],
+      "dfc-ext:updateReasons": "DataOverwrite",
+      "dfc-ext:updateTimestamp": {
+        "@type": "xsd:dateTime",
+        "@value": "2025-06-27T03:27:46.7707289+00:00"
+      }
+    }
+  ]
+}

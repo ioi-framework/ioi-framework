@@ -1,0 +1,27 @@
+PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
+PREFIX dfc-ext: <https://www.w3.org/dfc-ext/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT DISTINCT
+  ?officeFile ?fileName ?filePath ?xmlCreated ?mftSiCreated ?mftFnCreated
+WHERE {
+  GRAPH <http://example.org/office_case12> {
+    ?officeFile a observable:File ;
+                core:hasFacet ?xmlFacet , ?mftFacet , ?fileFacet .
+
+    ?xmlFacet a dfc-ext:OfficeXmlMetadataFacet ;
+              dfc-ext:dctermsCreated ?xmlCreated .
+
+    ?mftFacet a observable:MftRecordFacet ;
+              observable:mftFileNameCreatedTime ?mftFnCreated .
+
+    ?fileFacet a observable:FileFacet ;
+               observable:fileName ?fileName ;
+               observable:filePath ?filePath ;
+               observable:observableCreatedTime ?mftSiCreated .
+
+    FILTER(xsd:dateTime(?xmlCreated) < xsd:dateTime(?mftSiCreated))
+  }
+}
+ORDER BY ?filePath
