@@ -1,3 +1,4 @@
 # Ignore local working folders for documentation and Autopsy module work
 /Autopsy/
 /Paper/
+/conversion_time_figure.png
