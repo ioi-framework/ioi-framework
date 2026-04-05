@@ -29,34 +29,34 @@
             },
             {
                 "@id": "kb:lnk-entry-lnk-facet--{ENTRY_UUID}",
-                "@type": "dfc-ext:LnkFacet",
-                "dfc-ext:targetFilePath": "",
-                "dfc-ext:targetFileName": "",
-                "dfc-ext:targetCreatedTime": {
+                "@type": "ioi-ext:LnkFacet",
+                "ioi-ext:targetFilePath": "",
+                "ioi-ext:targetFileName": "",
+                "ioi-ext:targetCreatedTime": {
                     "@type": "xsd:dateTime",
                     "@value": ""
                 },
-                "dfc-ext:targetModifiedTime": {
+                "ioi-ext:targetModifiedTime": {
                     "@type": "xsd:dateTime",
                     "@value": ""
                 },
-                "dfc-ext:targetAccessedTime": {
+                "ioi-ext:targetAccessedTime": {
                     "@type": "xsd:dateTime",
                     "@value": ""
                 },
-                "dfc-ext:relativePath": "",
-                "dfc-ext:workingDirectory": "",
-                "dfc-ext:arguments": "",
-                "dfc-ext:targetMftEntryNumber": {
+                "ioi-ext:relativePath": "",
+                "ioi-ext:workingDirectory": "",
+                "ioi-ext:arguments": "",
+                "ioi-ext:targetMftEntryNumber": {
                     "@type": "xsd:integer",
                     "@value": 0
                 },
-                "dfc-ext:targetMftSequenceNumber": {
+                "ioi-ext:targetMftSequenceNumber": {
                     "@type": "xsd:integer",
                     "@value": 0
                 },
-                "dfc-ext:machineId": "",
-                "dfc-ext:machineMacAddress": ""
+                "ioi-ext:machineId": "",
+                "ioi-ext:machineMacAddress": ""
             }
         ]
     }

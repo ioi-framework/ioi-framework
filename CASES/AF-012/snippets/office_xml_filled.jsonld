@@ -4,7 +4,7 @@
     "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
     "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
     "investigation": "https://ontology.caseontology.org/case/investigation/",
-    "dfc-ext": "https://www.w3.org/dfc-ext/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
     "kb": "http://example.org/kb/",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "core:hasFacet": {
@@ -96,18 +96,18 @@
           "@id": "kb:xml-metadata-facet--930a6940-936c-46b0-9cbe-399b3886b0ee",
           "@type": [
             "core:Facet",
-            "dfc-ext:OfficeXmlMetadataFacet"
+            "ioi-ext:OfficeXmlMetadataFacet"
           ],
-          "dfc-ext:dctermsCreated": {
+          "ioi-ext:dctermsCreated": {
             "@type": "xsd:dateTime",
             "@value": "2025-03-04T01:09:00Z"
           },
-          "dfc-ext:dctermsModified": {
+          "ioi-ext:dctermsModified": {
             "@type": "xsd:dateTime",
             "@value": "2025-03-04T01:10:00Z"
           },
-          "dfc-ext:lastModifiedBy": "dfir rocks",
-          "dfc-ext:metadataSource": "docProps/core.xml"
+          "ioi-ext:lastModifiedBy": "dfir rocks",
+          "ioi-ext:metadataSource": "docProps/core.xml"
         }
       ]
     }

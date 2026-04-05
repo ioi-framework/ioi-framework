@@ -18,10 +18,10 @@
     {
       "@id": "kb:evtx-entry-custom-facet--6b02a8f1-511e-46c2-be37-ddff9f52f248",
       "@type": [
-        "dfc-ext:EventLogFacet",
+        "ioi-ext:EventLogFacet",
         "core:Facet"
       ],
-      "dfc-ext:channel": "Security"
+      "ioi-ext:channel": "Security"
     }
   ]
 }

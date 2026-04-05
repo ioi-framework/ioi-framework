@@ -5,10 +5,10 @@
     {
       "@id": "kb:mft-entry-custom-facet--726b9a18-2ef3-40af-b696-4faeb8631efb",
       "@type": [
-        "dfc-ext:MftFacet",
+        "ioi-ext:MftFacet",
         "core:Facet"
       ],
-      "dfc-ext:parentPath": ".\\Users\\resea\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\IndexedDB"
+      "ioi-ext:parentPath": ".\\Users\\resea\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\IndexedDB"
     },
     {
       "@id": "kb:mft-entry-file-facet--726b9a18-2ef3-40af-b696-4faeb8631efb",

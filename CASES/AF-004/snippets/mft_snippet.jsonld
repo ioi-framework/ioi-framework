@@ -11,11 +11,11 @@
     {
       "@id": "kb:mft-entry-custom-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
       "@type": [
-        "dfc-ext:MftFacet",
+        "ioi-ext:MftFacet",
         "core:Facet"
       ],
-      "dfc-ext:parentPath": ".\\System Volume Information",
-      "dfc-ext:fileName": "tracking.log"
+      "ioi-ext:parentPath": ".\\System Volume Information",
+      "ioi-ext:fileName": "tracking.log"
     }
   ]
 }

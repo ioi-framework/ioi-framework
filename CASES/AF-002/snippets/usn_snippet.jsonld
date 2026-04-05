@@ -11,11 +11,11 @@
     {
       "@id": "kb:usn-entry-custom-facet--4f00ccca-03f7-464e-8534-fa5a1a27847e",
       "@type": [
-        "dfc-ext:UsnFacet",
+        "ioi-ext:UsnFacet",
         "core:Facet"
       ],
-      "dfc-ext:updateReasons": "DataOverwrite|DataExtend|DataTruncation|FileCreate|Close",
-      "dfc-ext:updateTimestamp": {
+      "ioi-ext:updateReasons": "DataOverwrite|DataExtend|DataTruncation|FileCreate|Close",
+      "ioi-ext:updateTimestamp": {
         "@type": "xsd:dateTime",
         "@value": "2025-07-08T23:32:39.523892Z"
       }

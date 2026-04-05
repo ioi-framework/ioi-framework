@@ -1,0 +1,63 @@
+[
+    {
+        "@id": "kb:lnk-entry--{ENTRY_UUID}",
+        "@type": "observable:File",
+        "core:hasFacet": [
+            {
+                "@id": "kb:lnk-entry-file-facet--{ENTRY_UUID}",
+                "@type": ["core:Facet", "observable:FileFacet"],
+                "observable:fileName": "{SOURCE_FILE_NAME}",
+                "observable:filePath": "{SOURCE_FILE_PATH}",
+                "observable:extension": ".lnk",
+                "observable:isDirectory": false,
+                "observable:sizeInBytes": {
+                    "@type": "xsd:integer",
+                    "@value": "{FILE_SIZE}"
+                },
+                "observable:accessedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": "{SOURCE_ACCESSED}"
+                },
+                "observable:observableCreatedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": "{SOURCE_CREATED}"
+                },
+                "observable:modifiedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": "{SOURCE_MODIFIED}"
+                }
+            },
+            {
+                "@id": "kb:lnk-facet--{ENTRY_UUID}",
+                "@type": ["core:Facet", "ioi-ext:WindowsLnkFacet"],
+                "ioi-ext:targetFilePath": "{LOCAL_PATH}",
+                "ioi-ext:targetFileName": "{TARGET_FILE_NAME}",
+                "ioi-ext:targetCreatedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": "{TARGET_CREATED}"
+                },
+                "ioi-ext:targetModifiedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": "{TARGET_MODIFIED}"
+                },
+                "ioi-ext:targetAccessedTime": {
+                    "@type": "xsd:dateTime",
+                    "@value": "{TARGET_ACCESSED}"
+                },
+                "ioi-ext:relativePath": "{RELATIVE_PATH}",
+                "ioi-ext:workingDirectory": "{WORKING_DIRECTORY}",
+                "ioi-ext:arguments": "{ARGUMENTS}",
+                "ioi-ext:targetMftEntryNumber": {
+                    "@type": "xsd:integer",
+                    "@value": "{TARGET_MFT_ENTRY_NUMBER}"
+                },
+                "ioi-ext:targetMftSequenceNumber": {
+                    "@type": "xsd:integer",
+                    "@value": "{TARGET_MFT_SEQUENCE_NUMBER}"
+                },
+                "ioi-ext:machineId": "{MACHINE_ID}",
+                "ioi-ext:machineMacAddress": "{MACHINE_MAC_ADDRESS}"
+            }
+        ]
+    }
+]

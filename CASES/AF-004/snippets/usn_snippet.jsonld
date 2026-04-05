@@ -10,11 +10,11 @@
     {
       "@id": "kb:usn-entry-custom-facet--86aaea68-8d53-4284-be9d-7221d59b34bd",
       "@type": [
-        "dfc-ext:UsnFacet",
+        "ioi-ext:UsnFacet",
         "core:Facet"
       ],
-      "dfc-ext:updateReasons": "FileDelete|Close",
-      "dfc-ext:updateTimestamp": {
+      "ioi-ext:updateReasons": "FileDelete|Close",
+      "ioi-ext:updateTimestamp": {
         "@type": "xsd:dateTime",
         "@value": "2025-07-14T22:18:37.5953019+00:00"
       }

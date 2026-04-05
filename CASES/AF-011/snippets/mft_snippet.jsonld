@@ -5,14 +5,14 @@
     {
       "@id": "kb:mft-entry-custom-facet--f2db0c77-6a55-4273-a097-3af82408105a",
       "@type": [
-        "dfc-ext:MftFacet",
+        "ioi-ext:MftFacet",
         "core:Facet"
       ],
-      "dfc-ext:entryNumber": {
+      "ioi-ext:entryNumber": {
         "@type": "xsd:integer",
         "@value": 0
       },
-      "dfc-ext:created0x10": {
+      "ioi-ext:created0x10": {
         "@type": "xsd:dateTime",
         "@value": "2025-01-23T22:42:03.425Z"
       }

@@ -3,7 +3,7 @@
     "core": "https://ontology.unifiedcyberontology.org/uco/core/",
     "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
     "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
-    "dfc-ext": "https://www.w3.org/dfc-ext/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "kb": "http://example.org/kb/"
   },
@@ -35,122 +35,122 @@
         {
           "@id": "kb:mft-entry-custom-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
           "@type": [
-            "dfc-ext:MftFacet",
+            "ioi-ext:MftFacet",
             "core:Facet"
           ],
-          "dfc-ext:entryNumber": {
+          "ioi-ext:entryNumber": {
             "@type": "xsd:integer",
             "@value": 104179
           },
-          "dfc-ext:sequenceNumber": {
+          "ioi-ext:sequenceNumber": {
             "@type": "xsd:integer",
             "@value": 1
           },
-          "dfc-ext:mftFlags": {
+          "ioi-ext:mftFlags": {
             "@type": "xsd:integer",
             "@value": 0
           },
-          "dfc-ext:inUse": {
+          "ioi-ext:inUse": {
             "@type": "xsd:boolean",
             "@value": "true"
           },
-          "dfc-ext:parentEntryNumber": {
+          "ioi-ext:parentEntryNumber": {
             "@type": "xsd:integer",
             "@value": 103691
           },
-          "dfc-ext:parentSequenceNumber": {
+          "ioi-ext:parentSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 2
           },
-          "dfc-ext:parentPath": ".\\System Volume Information",
-          "dfc-ext:fileName": "tracking.log",
-          "dfc-ext:extension": ".log",
-          "dfc-ext:fileSize": {
+          "ioi-ext:parentPath": ".\\System Volume Information",
+          "ioi-ext:fileName": "tracking.log",
+          "ioi-ext:extension": ".log",
+          "ioi-ext:fileSize": {
             "@type": "xsd:integer",
             "@value": 20480
           },
-          "dfc-ext:referenceCount": {
+          "ioi-ext:referenceCount": {
             "@type": "xsd:integer",
             "@value": 1
           },
-          "dfc-ext:reparseTarget": "",
-          "dfc-ext:isDirectory": {
+          "ioi-ext:reparseTarget": "",
+          "ioi-ext:isDirectory": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:hasAds": {
+          "ioi-ext:hasAds": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:isAds": {
+          "ioi-ext:isAds": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:siLessThanFn": {
+          "ioi-ext:siLessThanFn": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:uSecZeros": {
+          "ioi-ext:uSecZeros": {
             "@type": "xsd:integer",
             "@value": 0
           },
-          "dfc-ext:copied": {
+          "ioi-ext:copied": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:siFlags": {
+          "ioi-ext:siFlags": {
             "@type": "xsd:integer",
             "@value": 38
           },
-          "dfc-ext:nameType": {
+          "ioi-ext:nameType": {
             "@type": "xsd:integer",
             "@value": "0"
           },
-          "dfc-ext:created0x10": {
+          "ioi-ext:created0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:20:29.5311049+00:00"
           },
-          "dfc-ext:created0x30": {
+          "ioi-ext:created0x30": {
             "@type": "xsd:dateTime",
             "@value": "1970-01-01T00:00:00Z"
           },
-          "dfc-ext:lastModified0x10": {
+          "ioi-ext:lastModified0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:20:30.1252071+00:00"
           },
-          "dfc-ext:lastModified0x30": {
+          "ioi-ext:lastModified0x30": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:20:29.8747496+00:00"
           },
-          "dfc-ext:lastRecordChange0x10": {
+          "ioi-ext:lastRecordChange0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:20:30.1252071+00:00"
           },
-          "dfc-ext:lastRecordChange0x30": {
+          "ioi-ext:lastRecordChange0x30": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:20:29.8747496+00:00"
           },
-          "dfc-ext:lastAccess0x10": {
+          "ioi-ext:lastAccess0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:20:30.1252071+00:00"
           },
-          "dfc-ext:lastAccess0x30": {
+          "ioi-ext:lastAccess0x30": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:20:29.8747496+00:00"
           },
-          "dfc-ext:updateSequenceNumber": {
+          "ioi-ext:updateSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 4288592
           },
-          "dfc-ext:logfileSequenceNumber": {
+          "ioi-ext:logfileSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 235538741
           },
-          "dfc-ext:securityId": 263,
-          "dfc-ext:objectIdFileDroid": "",
-          "dfc-ext:loggedUtilStream": "",
-          "dfc-ext:zoneIdContents": "",
-          "dfc-ext:sourceFile": "$MFT"
+          "ioi-ext:securityId": 263,
+          "ioi-ext:objectIdFileDroid": "",
+          "ioi-ext:loggedUtilStream": "",
+          "ioi-ext:zoneIdContents": "",
+          "ioi-ext:sourceFile": "$MFT"
         }
       ]
     },
@@ -181,122 +181,122 @@
         {
           "@id": "kb:mft-entry-custom-facet--7910e69e-1f1c-4034-be05-f9a99bea014e",
           "@type": [
-            "dfc-ext:MftFacet",
+            "ioi-ext:MftFacet",
             "core:Facet"
           ],
-          "dfc-ext:entryNumber": {
+          "ioi-ext:entryNumber": {
             "@type": "xsd:integer",
             "@value": 105784
           },
-          "dfc-ext:sequenceNumber": {
+          "ioi-ext:sequenceNumber": {
             "@type": "xsd:integer",
             "@value": 8
           },
-          "dfc-ext:mftFlags": {
+          "ioi-ext:mftFlags": {
             "@type": "xsd:integer",
             "@value": 0
           },
-          "dfc-ext:inUse": {
+          "ioi-ext:inUse": {
             "@type": "xsd:boolean",
             "@value": "true"
           },
-          "dfc-ext:parentEntryNumber": {
+          "ioi-ext:parentEntryNumber": {
             "@type": "xsd:integer",
             "@value": 103691
           },
-          "dfc-ext:parentSequenceNumber": {
+          "ioi-ext:parentSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 2
           },
-          "dfc-ext:parentPath": ".\\System Volume Information",
-          "dfc-ext:fileName": "IndexerVolumeGuid",
-          "dfc-ext:extension": "",
-          "dfc-ext:fileSize": {
+          "ioi-ext:parentPath": ".\\System Volume Information",
+          "ioi-ext:fileName": "IndexerVolumeGuid",
+          "ioi-ext:extension": "",
+          "ioi-ext:fileSize": {
             "@type": "xsd:integer",
             "@value": 76
           },
-          "dfc-ext:referenceCount": {
+          "ioi-ext:referenceCount": {
             "@type": "xsd:integer",
             "@value": 1
           },
-          "dfc-ext:reparseTarget": "",
-          "dfc-ext:isDirectory": {
+          "ioi-ext:reparseTarget": "",
+          "ioi-ext:isDirectory": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:hasAds": {
+          "ioi-ext:hasAds": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:isAds": {
+          "ioi-ext:isAds": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:siLessThanFn": {
+          "ioi-ext:siLessThanFn": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:uSecZeros": {
+          "ioi-ext:uSecZeros": {
             "@type": "xsd:integer",
             "@value": 0
           },
-          "dfc-ext:copied": {
+          "ioi-ext:copied": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:siFlags": {
+          "ioi-ext:siFlags": {
             "@type": "xsd:integer",
             "@value": 32
           },
-          "dfc-ext:nameType": {
+          "ioi-ext:nameType": {
             "@type": "xsd:integer",
             "@value": "0"
           },
-          "dfc-ext:created0x10": {
+          "ioi-ext:created0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:22:45.7844109+00:00"
           },
-          "dfc-ext:created0x30": {
+          "ioi-ext:created0x30": {
             "@type": "xsd:dateTime",
             "@value": "1970-01-01T00:00:00Z"
           },
-          "dfc-ext:lastModified0x10": {
+          "ioi-ext:lastModified0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:22:45.7844109+00:00"
           },
-          "dfc-ext:lastModified0x30": {
+          "ioi-ext:lastModified0x30": {
             "@type": "xsd:dateTime",
             "@value": "1970-01-01T00:00:00Z"
           },
-          "dfc-ext:lastRecordChange0x10": {
+          "ioi-ext:lastRecordChange0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:22:45.7844109+00:00"
           },
-          "dfc-ext:lastRecordChange0x30": {
+          "ioi-ext:lastRecordChange0x30": {
             "@type": "xsd:dateTime",
             "@value": "1970-01-01T00:00:00Z"
           },
-          "dfc-ext:lastAccess0x10": {
+          "ioi-ext:lastAccess0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-07-14T22:11:49.2445672+00:00"
           },
-          "dfc-ext:lastAccess0x30": {
+          "ioi-ext:lastAccess0x30": {
             "@type": "xsd:dateTime",
             "@value": "2025-06-27T02:22:45.7844109+00:00"
           },
-          "dfc-ext:updateSequenceNumber": {
+          "ioi-ext:updateSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 4517056
           },
-          "dfc-ext:logfileSequenceNumber": {
+          "ioi-ext:logfileSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 1062164900
           },
-          "dfc-ext:securityId": 917,
-          "dfc-ext:objectIdFileDroid": "",
-          "dfc-ext:loggedUtilStream": "",
-          "dfc-ext:zoneIdContents": "",
-          "dfc-ext:sourceFile": "$MFT"
+          "ioi-ext:securityId": 917,
+          "ioi-ext:objectIdFileDroid": "",
+          "ioi-ext:loggedUtilStream": "",
+          "ioi-ext:zoneIdContents": "",
+          "ioi-ext:sourceFile": "$MFT"
         }
       ]
     },
@@ -327,122 +327,122 @@
         {
           "@id": "kb:mft-entry-custom-facet--f3cc773f-75fd-4e81-950f-c108b5940070",
           "@type": [
-            "dfc-ext:MftFacet",
+            "ioi-ext:MftFacet",
             "core:Facet"
           ],
-          "dfc-ext:entryNumber": {
+          "ioi-ext:entryNumber": {
             "@type": "xsd:integer",
             "@value": 125882
           },
-          "dfc-ext:sequenceNumber": {
+          "ioi-ext:sequenceNumber": {
             "@type": "xsd:integer",
             "@value": 8
           },
-          "dfc-ext:mftFlags": {
+          "ioi-ext:mftFlags": {
             "@type": "xsd:integer",
             "@value": 0
           },
-          "dfc-ext:inUse": {
+          "ioi-ext:inUse": {
             "@type": "xsd:boolean",
             "@value": "true"
           },
-          "dfc-ext:parentEntryNumber": {
+          "ioi-ext:parentEntryNumber": {
             "@type": "xsd:integer",
             "@value": 125705
           },
-          "dfc-ext:parentSequenceNumber": {
+          "ioi-ext:parentSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 4
           },
-          "dfc-ext:parentPath": ".\\System Volume Information\\SPP\\OnlineMetadataCache",
-          "dfc-ext:fileName": "{58b60e73-8711-4b85-ba84-e07afc57e1a5}_OnDiskSnapshotProp",
-          "dfc-ext:extension": "",
-          "dfc-ext:fileSize": {
+          "ioi-ext:parentPath": ".\\System Volume Information\\SPP\\OnlineMetadataCache",
+          "ioi-ext:fileName": "{58b60e73-8711-4b85-ba84-e07afc57e1a5}_OnDiskSnapshotProp",
+          "ioi-ext:extension": "",
+          "ioi-ext:fileSize": {
             "@type": "xsd:integer",
             "@value": 3472
           },
-          "dfc-ext:referenceCount": {
+          "ioi-ext:referenceCount": {
             "@type": "xsd:integer",
             "@value": 1
           },
-          "dfc-ext:reparseTarget": "",
-          "dfc-ext:isDirectory": {
+          "ioi-ext:reparseTarget": "",
+          "ioi-ext:isDirectory": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:hasAds": {
+          "ioi-ext:hasAds": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:isAds": {
+          "ioi-ext:isAds": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:siLessThanFn": {
+          "ioi-ext:siLessThanFn": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:uSecZeros": {
+          "ioi-ext:uSecZeros": {
             "@type": "xsd:integer",
             "@value": 0
           },
-          "dfc-ext:copied": {
+          "ioi-ext:copied": {
             "@type": "xsd:boolean",
             "@value": "false"
           },
-          "dfc-ext:siFlags": {
+          "ioi-ext:siFlags": {
             "@type": "xsd:integer",
             "@value": 8230
           },
-          "dfc-ext:nameType": {
+          "ioi-ext:nameType": {
             "@type": "xsd:integer",
             "@value": "0"
           },
-          "dfc-ext:created0x10": {
+          "ioi-ext:created0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-07-14T22:31:38.1354333+00:00"
           },
-          "dfc-ext:created0x30": {
+          "ioi-ext:created0x30": {
             "@type": "xsd:dateTime",
             "@value": "1970-01-01T00:00:00Z"
           },
-          "dfc-ext:lastModified0x10": {
+          "ioi-ext:lastModified0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-07-14T22:31:38.1354333+00:00"
           },
-          "dfc-ext:lastModified0x30": {
+          "ioi-ext:lastModified0x30": {
             "@type": "xsd:dateTime",
             "@value": "1970-01-01T00:00:00Z"
           },
-          "dfc-ext:lastRecordChange0x10": {
+          "ioi-ext:lastRecordChange0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-07-14T22:31:38.1354333+00:00"
           },
-          "dfc-ext:lastRecordChange0x30": {
+          "ioi-ext:lastRecordChange0x30": {
             "@type": "xsd:dateTime",
             "@value": "1970-01-01T00:00:00Z"
           },
-          "dfc-ext:lastAccess0x10": {
+          "ioi-ext:lastAccess0x10": {
             "@type": "xsd:dateTime",
             "@value": "2025-07-14T22:31:42.0611377+00:00"
           },
-          "dfc-ext:lastAccess0x30": {
+          "ioi-ext:lastAccess0x30": {
             "@type": "xsd:dateTime",
             "@value": "2025-07-14T22:31:38.1354333+00:00"
           },
-          "dfc-ext:updateSequenceNumber": {
+          "ioi-ext:updateSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 471062704
           },
-          "dfc-ext:logfileSequenceNumber": {
+          "ioi-ext:logfileSequenceNumber": {
             "@type": "xsd:integer",
             "@value": 1562204490
           },
-          "dfc-ext:securityId": 2878,
-          "dfc-ext:objectIdFileDroid": "",
-          "dfc-ext:loggedUtilStream": "",
-          "dfc-ext:zoneIdContents": "",
-          "dfc-ext:sourceFile": "$MFT"
+          "ioi-ext:securityId": 2878,
+          "ioi-ext:objectIdFileDroid": "",
+          "ioi-ext:loggedUtilStream": "",
+          "ioi-ext:zoneIdContents": "",
+          "ioi-ext:sourceFile": "$MFT"
         }
       ]
     }

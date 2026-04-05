@@ -1,0 +1,14 @@
+[
+  {
+    "@id": "kb:action-extract-evtx-entry--{ACTION_UUID}",
+    "@type": "uco-action:Action",
+    "uco-core:name": "Event-Log-Entry-Extraction",
+    "uco-core:description": "Extraction of Windows Event Log entry from .evtx file",
+    "uco-core:source": {
+      "@id": "kb:evtx-source-file--{SOURCE_UUID}"
+    },
+    "uco-core:target": {
+      "@id": "kb:evtx-entry--{ENTRY_UUID}"
+    }
+  }
+]

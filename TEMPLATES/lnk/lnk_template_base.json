@@ -3,7 +3,7 @@
         "core": "https://ontology.unifiedcyberontology.org/uco/core/",
         "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
         "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
-        "dfc-ext": "https://www.w3.org/dfc-ext/",
+        "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
         "xsd": "http://www.w3.org/2001/XMLSchema#",
         "kb": "http://example.org/kb/"
     },

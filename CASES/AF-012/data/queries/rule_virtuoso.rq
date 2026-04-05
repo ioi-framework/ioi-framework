@@ -1,0 +1,37 @@
+PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
+PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT DISTINCT
+  ?officeFile ?fileName ?filePath ?xmlCreated ?mftSiCreated ?mftFnCreated
+WHERE {
+  GRAPH <http://example.org/office_case12> {
+    ?officeFile a observable:File ;
+                core:hasFacet ?xmlFacet , ?officeFileFacet .
+
+    ?xmlFacet a ioi-ext:OfficeXmlMetadataFacet ;
+              ioi-ext:dctermsCreated ?xmlCreated .
+
+    ?officeFileFacet a observable:FileFacet ;
+                     observable:fileName ?fileName ;
+                     observable:filePath ?filePath .
+  }
+
+  GRAPH <http://example.org/mft_case12> {
+    ?mftFile a observable:File ;
+             core:hasFacet ?mftFileFacet , ?mftFacet .
+
+    ?mftFileFacet a observable:FileFacet ;
+                  observable:fileName ?mftFileName .
+
+    ?mftFacet a ioi-ext:MftFacet ;
+              ioi-ext:created0x10 ?mftSiCreated ;
+              ioi-ext:created0x30 ?mftFnCreated .
+
+    FILTER(LCASE(STR(?mftFileName)) = LCASE(STR(?fileName)))
+  }
+
+  FILTER(xsd:dateTime(?xmlCreated) < xsd:dateTime(?mftSiCreated))
+}
+ORDER BY ?filePath

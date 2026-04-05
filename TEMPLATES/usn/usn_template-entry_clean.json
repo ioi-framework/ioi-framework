@@ -17,41 +17,41 @@
       {
         "@id": "kb:usn-entry-custom-facet--{ENTRY_UUID}",
         "@type": [
-          "dfc-ext:UsnFacet",
+          "ioi-ext:UsnFacet",
           "core:Facet"
         ],
-        "dfc-ext:entryNumber": {
+        "ioi-ext:entryNumber": {
           "@type": "xsd:integer",
           "@value": "{ENTRY_NUMBER}"
         },
-        "dfc-ext:sequenceNumber": {
+        "ioi-ext:sequenceNumber": {
           "@type": "xsd:integer",
           "@value": "{SEQUENCE_NUMBER}"
         },
-        "dfc-ext:parentEntryNumber": {
+        "ioi-ext:parentEntryNumber": {
           "@type": "xsd:integer",
           "@value": "{PARENT_ENTRY_NUMBER}"
         },
-        "dfc-ext:parentSequenceNumber": {
+        "ioi-ext:parentSequenceNumber": {
           "@type": "xsd:integer",
           "@value": "{PARENT_SEQUENCE_NUMBER}"
         },
-        "dfc-ext:parentPath": "{PARENT_PATH}",
-        "dfc-ext:updateSequenceNumber": {
+        "ioi-ext:parentPath": "{PARENT_PATH}",
+        "ioi-ext:updateSequenceNumber": {
           "@type": "xsd:integer",
           "@value": "{UPDATE_SEQUENCE_NUMBER}"
         },
-        "dfc-ext:updateTimestamp": {
+        "ioi-ext:updateTimestamp": {
           "@type": "xsd:dateTime",
           "@value": "{UPDATE_TIMESTAMP}"
         },
-        "dfc-ext:updateReasons": "{UPDATE_REASONS}",
-        "dfc-ext:fileAttributes": "{FILE_ATTRIBUTES}",
-        "dfc-ext:offsetToData": {
+        "ioi-ext:updateReasons": "{UPDATE_REASONS}",
+        "ioi-ext:fileAttributes": "{FILE_ATTRIBUTES}",
+        "ioi-ext:offsetToData": {
           "@type": "xsd:integer",
           "@value": "{OFFSET_TO_DATA}"
         },
-        "dfc-ext:sourceFile": "{SOURCE_FILE}"
+        "ioi-ext:sourceFile": "{SOURCE_FILE}"
       }
     ]
   }

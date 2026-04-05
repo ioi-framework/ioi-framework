@@ -4,7 +4,7 @@
     "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
     "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
     "investigation": "https://ontology.caseontology.org/case/investigation/",
-    "dfc-ext": "https://www.w3.org/dfc-ext/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
     "kb": "http://example.org/kb/",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "core:hasFacet": {

@@ -1,0 +1,8 @@
+# Placeholder — CI validation workflow (to be implemented)
+name: IoI Validation
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3

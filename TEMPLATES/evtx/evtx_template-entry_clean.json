@@ -28,34 +28,34 @@
       {
         "@id": "kb:evtx-entry-custom-facet--{ENTRY_UUID}",
         "@type": [
-          "dfc-ext:EventLogFacet",
+          "ioi-ext:EventLogFacet",
           "core:Facet"
         ],
-        "dfc-ext:channel": "{CHANNEL}",
-        "dfc-ext:keywords": "{KEYWORDS}",
-        "dfc-ext:processId": {
+        "ioi-ext:channel": "{CHANNEL}",
+        "ioi-ext:keywords": "{KEYWORDS}",
+        "ioi-ext:processId": {
           "@type": "xsd:integer",
           "@value": "{PROCESS_ID}"
         },
-        "dfc-ext:threadId": {
+        "ioi-ext:threadId": {
           "@type": "xsd:integer",
           "@value": "{THREAD_ID}"
         },
-        "dfc-ext:chunkNumber": {
+        "ioi-ext:chunkNumber": {
           "@type": "xsd:integer",
           "@value": "{CHUNK_NUMBER}"
         },
-        "dfc-ext:extraDataOffset": {
+        "ioi-ext:extraDataOffset": {
           "@type": "xsd:integer",
           "@value": "{EXTRA_DATA_OFFSET}"
         },
-        "dfc-ext:hiddenRecord": {
+        "ioi-ext:hiddenRecord": {
           "@type": "xsd:boolean",
           "@value": "{HIDDEN_RECORD}"
         },
-        "dfc-ext:sourceFile": "{SOURCE_FILE}",
-        "dfc-ext:payloadData1": "{PAYLOAD_DATA1}",
-        "dfc-ext:payloadData2": "{PAYLOAD_DATA2}"
+        "ioi-ext:sourceFile": "{SOURCE_FILE}",
+        "ioi-ext:payloadData1": "{PAYLOAD_DATA1}",
+        "ioi-ext:payloadData2": "{PAYLOAD_DATA2}"
       }
     ]
   }

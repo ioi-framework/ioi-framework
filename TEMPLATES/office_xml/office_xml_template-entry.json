@@ -66,17 +66,17 @@
             },
             {
                 "@id": "kb:xml-metadata-facet--{ENTRY_UUID}",
-                "@type": ["core:Facet", "dfc-ext:OfficeXmlMetadataFacet"],
-                "dfc-ext:dctermsCreated": {
+                "@type": ["core:Facet", "ioi-ext:OfficeXmlMetadataFacet"],
+                "ioi-ext:dctermsCreated": {
                     "@type": "xsd:dateTime",
                     "@value": "{DCTERMS_CREATED}"
                 },
-                "dfc-ext:dctermsModified": {
+                "ioi-ext:dctermsModified": {
                     "@type": "xsd:dateTime",
                     "@value": "{DCTERMS_MODIFIED}"
                 },
-                "dfc-ext:lastModifiedBy": "{LAST_MODIFIED_BY}",
-                "dfc-ext:metadataSource": "docProps/core.xml"
+                "ioi-ext:lastModifiedBy": "{LAST_MODIFIED_BY}",
+                "ioi-ext:metadataSource": "docProps/core.xml"
             }
         ]
     }
