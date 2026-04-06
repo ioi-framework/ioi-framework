@@ -8,6 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://d3js.org/d3.v7.min.js" defer></script>
+<script type="module" id="oxigraph-loader">
+  import init, { Store } from 'https://cdn.jsdelivr.net/npm/oxigraph@0.4.0-alpha.7/web.js';
+  await init();
+  window.OxigraphStore = Store;
+  window.oxReady = true;
+</script>
 <style>
 /* ===== RESET & BASE ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -506,6 +512,8 @@ function loadFromUrl() {
 // ---- Data Processing ----
 function processData(data, filename) {
   rawData = data;
+  window._rawJsonLd = JSON.stringify(data);
+  window._jsonLdContext = data['@context'] || {};
   const graph = data['@graph'] || (Array.isArray(data) ? data : [data]);
   graphEntries = graph;
 
@@ -653,6 +661,9 @@ function processData(data, filename) {
   statTypes.textContent = typeSet.size;
   fileInfo.style.display = 'flex';
   dropLabel.textContent = 'Loaded:';
+
+  // Build oxigraph SPARQL store
+  buildOxStore();
 
   // Render everything
   renderGraph();
@@ -1093,11 +1104,34 @@ tableSearch.addEventListener('input', () => {
   tableSearchTimeout = setTimeout(renderTable, 200);
 });
 
-// ---- SPARQL-LIKE QUERY ENGINE ----
+// ---- SPARQL ENGINE (oxigraph WASM) ----
+let oxStore = null; // oxigraph Store instance
+
 const exampleQueries = {
-  types: `SELECT DISTINCT ?type WHERE {\n  ?s @type ?type .\n}`,
-  timestomping: `SELECT ?s ?created0x10 ?created0x30 WHERE {\n  ?s ioi-ext:created0x10 ?created0x10 .\n  ?s ioi-ext:created0x30 ?created0x30 .\n  FILTER(?created0x10 != ?created0x30)\n}`,
-  count: `SELECT ?type (COUNT(?s) AS ?count) WHERE {\n  ?s @type ?type .\n}\nGROUP BY ?type`
+  types: `PREFIX uco-core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX uco-observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
+PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
+
+SELECT DISTINCT ?type WHERE {
+  ?s a ?type .
+}`,
+  timestomping: `PREFIX uco-core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?entry ?created0x10 ?created0x30 WHERE {
+  ?entry uco-core:hasFacet ?facet .
+  ?facet ioi-ext:mftCreated0x10 ?created0x10 .
+  ?facet ioi-ext:mftCreated0x30 ?created0x30 .
+  FILTER(?created0x10 != ?created0x30)
+}`,
+  count: `PREFIX uco-core: <https://ontology.unifiedcyberontology.org/uco/core/>
+
+SELECT ?type (COUNT(?s) AS ?count) WHERE {
+  ?s a ?type .
+}
+GROUP BY ?type
+ORDER BY DESC(?count)`
 };
 
 $$('.example-btn').forEach(btn => {
@@ -1121,195 +1155,104 @@ sparqlEditor.addEventListener('keydown', e => {
 function runQuery() {
   const query = sparqlEditor.value.trim();
   if (!query) return;
-  if (!tripleStore.length) {
+
+  if (!window.oxReady) {
+    runStatus.textContent = 'SPARQL engine loading (oxigraph WASM)...';
+    runStatus.className = 'run-status error';
+    return;
+  }
+
+  if (!oxStore || !tripleStore.length) {
     runStatus.textContent = 'No data loaded';
     runStatus.className = 'run-status error';
     return;
   }
 
   try {
-    const result = executeSparql(query);
-    displayResults(result);
-    runStatus.textContent = `${result.rows.length} result${result.rows.length !== 1 ? 's' : ''} in ${result.time}ms`;
+    const t0 = performance.now();
+    const results = oxStore.query(query);
+    const elapsed = Math.round(performance.now() - t0);
+
+    // Parse results
+    const rows = [];
+    const columns = [];
+    for (const binding of results) {
+      const row = {};
+      for (const [key, term] of binding) {
+        if (!columns.includes(key)) columns.push(key);
+        row[key] = term.value;
+      }
+      rows.push(row);
+    }
+
+    displayResults({ columns, rows, time: elapsed });
+    runStatus.textContent = `${rows.length} result${rows.length !== 1 ? 's' : ''} in ${elapsed}ms (oxigraph SPARQL 1.1)`;
     runStatus.className = 'run-status success';
   } catch(err) {
-    runStatus.textContent = 'Error: ' + err.message;
+    runStatus.textContent = 'SPARQL Error: ' + err.message;
     runStatus.className = 'run-status error';
   }
 }
 
-function executeSparql(query) {
-  const t0 = performance.now();
+// Build oxigraph store from tripleStore array
+function buildOxStore() {
+  if (!window.oxReady || !window.OxigraphStore) return;
+  oxStore = new window.OxigraphStore();
 
-  // Parse query
-  const selectMatch = query.match(/SELECT\s+(DISTINCT\s+)?(.+?)\s+WHERE/is);
-  if (!selectMatch) throw new Error('Query must have SELECT ... WHERE { } form');
-
-  const distinct = !!selectMatch[1];
-  const selectVars = selectMatch[2];
-
-  const whereMatch = query.match(/WHERE\s*\{([^}]+)\}/is);
-  if (!whereMatch) throw new Error('Missing WHERE { } block');
-
-  const whereBody = whereMatch[1].trim();
-
-  // Check for GROUP BY
-  const groupMatch = query.match(/GROUP\s+BY\s+(\?\w+)/i);
-  const groupBy = groupMatch ? groupMatch[1] : null;
-
-  // Parse aggregates from SELECT
-  const aggregates = [];
-  const varList = [];
-  // First extract aggregate expressions like (COUNT(?s) AS ?count)
-  let remainSelect = selectVars;
-  const aggRe = /\((\w+)\((\?\w+)\)\s+AS\s+(\?\w+)\)/gi;
-  let am;
-  while ((am = aggRe.exec(selectVars)) !== null) {
-    aggregates.push({ fn: am[1].toUpperCase(), input: am[2], output: am[3] });
-    varList.push(am[3]);
-    remainSelect = remainSelect.replace(am[0], '');
-  }
-  // Then extract remaining variables
-  const varRe = /\?\w+/g;
-  let vm;
-  while ((vm = varRe.exec(remainSelect)) !== null) {
-    if (!varList.includes(vm[0])) varList.push(vm[0]);
-  }
-
-  // Parse WHERE patterns
-  const patterns = [];
-  const filterConditions = [];
-
-  // Split by . but not inside FILTER()
-  let bodyRemain = whereBody;
-  const filterMatch = bodyRemain.match(/FILTER\s*\(([^)]+)\)/i);
-  if (filterMatch) {
-    filterConditions.push(filterMatch[1].trim());
-    bodyRemain = bodyRemain.replace(filterMatch[0], '');
-  }
-
-  const patternLines = bodyRemain.split('.').map(s => s.trim()).filter(Boolean);
-  patternLines.forEach(line => {
-    const parts = line.split(/\s+/).filter(Boolean);
-    if (parts.length >= 3) {
-      patterns.push({ s: parts[0], p: parts[1], o: parts.slice(2).join(' ') });
+  // Load from the raw JSON-LD string (oxigraph can parse it directly)
+  if (window._rawJsonLd) {
+    try {
+      oxStore.load(window._rawJsonLd, 'application/ld+json', null, null);
+    } catch(e) {
+      console.warn('oxigraph JSON-LD load failed, falling back to N-Triples:', e);
+      // Fallback: build N-Triples from our tripleStore
+      loadFromTripleStore();
     }
-  });
-
-  // Match patterns against triple store
-  let bindings = [{}];
-
-  patterns.forEach(pattern => {
-    const newBindings = [];
-    bindings.forEach(binding => {
-      tripleStore.forEach(triple => {
-        const match = matchTriple(pattern, triple, binding);
-        if (match) newBindings.push(match);
-      });
-    });
-    bindings = newBindings;
-  });
-
-  // Apply FILTER
-  filterConditions.forEach(cond => {
-    bindings = bindings.filter(b => evaluateFilter(cond, b));
-  });
-
-  // GROUP BY + aggregates
-  if (groupBy) {
-    const groups = new Map();
-    bindings.forEach(b => {
-      const key = b[groupBy] || '';
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(b);
-    });
-
-    const aggRows = [];
-    groups.forEach((group, key) => {
-      const row = { [groupBy]: key };
-      aggregates.forEach(agg => {
-        if (agg.fn === 'COUNT') row[agg.output] = String(group.length);
-        else if (agg.fn === 'SUM') row[agg.output] = String(group.reduce((s, b) => s + (parseFloat(b[agg.input]) || 0), 0));
-      });
-      aggRows.push(row);
-    });
-
-    // Sort by count descending if count exists
-    const countVar = aggregates.find(a => a.fn === 'COUNT');
-    if (countVar) aggRows.sort((a, b) => parseInt(b[countVar.output]) - parseInt(a[countVar.output]));
-
-    return { columns: varList, rows: aggRows, time: Math.round(performance.now() - t0) };
+  } else {
+    loadFromTripleStore();
   }
-
-  // DISTINCT
-  if (distinct) {
-    const seen = new Set();
-    bindings = bindings.filter(b => {
-      const key = varList.map(v => b[v] || '').join('|||');
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  // Project
-  const rows = bindings.map(b => {
-    const row = {};
-    varList.forEach(v => row[v] = b[v] || '');
-    return row;
-  });
-
-  return { columns: varList, rows, time: Math.round(performance.now() - t0) };
 }
 
-function matchTriple(pattern, triple, binding) {
-  const newBinding = { ...binding };
+function loadFromTripleStore() {
+  // Convert our {s, p, o} triples to N-Triples format for oxigraph
+  const ctx = window._jsonLdContext || {};
+  function expandIRI(val) {
+    if (!val || val.startsWith('http')) return val;
+    const idx = val.indexOf(':');
+    if (idx > 0) {
+      const prefix = val.substring(0, idx);
+      const local = val.substring(idx + 1);
+      if (ctx[prefix]) return ctx[prefix] + local;
+    }
+    return val;
+  }
 
-  function matchPart(patternPart, triplePart) {
-    if (patternPart.startsWith('?')) {
-      // Variable
-      if (newBinding[patternPart] !== undefined) {
-        return newBinding[patternPart] === triplePart;
+  const lines = [];
+  tripleStore.forEach(t => {
+    const s = expandIRI(t.s);
+    const p = t.p === '@type'
+      ? 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
+      : expandIRI(t.p);
+    const o = expandIRI(t.o);
+
+    if (!s || !p || !o) return;
+    if (s.startsWith('http') && p.startsWith('http')) {
+      if (o.startsWith('http')) {
+        lines.push(`<${s}> <${p}> <${o}> .`);
+      } else {
+        const escaped = o.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        lines.push(`<${s}> <${p}> "${escaped}" .`);
       }
-      newBinding[patternPart] = triplePart;
-      return true;
     }
-    // Literal — match against predicate, allowing partial match
-    return triplePart === patternPart || triplePart.endsWith(patternPart) || triplePart.includes(patternPart);
-  }
+  });
 
-  if (!matchPart(pattern.s, triple.s)) return null;
-  if (!matchPart(pattern.p, triple.p)) return null;
-  if (!matchPart(pattern.o, triple.o)) return null;
-
-  return newBinding;
-}
-
-function evaluateFilter(cond, binding) {
-  // Support: ?var != ?var2, ?var != "literal", ?var = "literal"
-  const neqMatch = cond.match(/(\?\w+)\s*!=\s*(\?\w+|"[^"]*"|'[^']*'|\S+)/);
-  if (neqMatch) {
-    const left = neqMatch[1].startsWith('?') ? binding[neqMatch[1]] : neqMatch[1];
-    let right = neqMatch[2];
-    if (right.startsWith('?')) right = binding[right];
-    else right = right.replace(/^["']|["']$/g, '');
-    return left !== right;
+  if (lines.length) {
+    try {
+      oxStore.load(lines.join('\n'), 'application/n-triples');
+    } catch(e) {
+      console.warn('N-Triples load error:', e);
+    }
   }
-  const eqMatch = cond.match(/(\?\w+)\s*=\s*(\?\w+|"[^"]*"|'[^']*'|\S+)/);
-  if (eqMatch) {
-    const left = eqMatch[1].startsWith('?') ? binding[eqMatch[1]] : eqMatch[1];
-    let right = eqMatch[2];
-    if (right.startsWith('?')) right = binding[right];
-    else right = right.replace(/^["']|["']$/g, '');
-    return left === right;
-  }
-  // CONTAINS
-  const containsMatch = cond.match(/CONTAINS\s*\(\s*(\?\w+)\s*,\s*["']([^"']+)["']\s*\)/i);
-  if (containsMatch) {
-    const val = binding[containsMatch[1]] || '';
-    return val.includes(containsMatch[2]);
-  }
-  return true; // Unknown filter, pass through
 }
 
 function displayResults(result) {
@@ -1338,7 +1281,7 @@ function displayResults(result) {
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
-  result.rows.forEach(row => {
+  result.rows.slice(0, 500).forEach(row => {
     const tr = document.createElement('tr');
     result.columns.forEach(col => {
       const td = document.createElement('td');
