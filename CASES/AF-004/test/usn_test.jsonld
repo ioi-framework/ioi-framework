@@ -1,0 +1,49 @@
+{
+  "@context": {
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "kb": "http://example.org/kb/"
+  },
+  "@graph": [
+    {
+      "@id": "kb:usn-entry--0001",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:usn-file-facet--0001",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}",
+          "observable:filePath": "C:\\System Volume Information\\{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+        },
+        {
+          "@id": "kb:usn-custom-facet--0001",
+          "@type": ["ioi-ext:UsnFacet", "core:Facet"],
+          "ioi-ext:updateReasons": "FileDelete ; FileDeleteClose",
+          "ioi-ext:updateTimestamp": { "@type": "xsd:dateTime", "@value": "2025-03-04T10:15:43Z" },
+          "ioi-ext:parentPath": "C:\\System Volume Information"
+        }
+      ]
+    },
+    {
+      "@id": "kb:usn-entry--0002",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:usn-file-facet--0002",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "Apps_{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}",
+          "observable:filePath": "C:\\System Volume Information\\Apps_{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+        },
+        {
+          "@id": "kb:usn-custom-facet--0002",
+          "@type": ["ioi-ext:UsnFacet", "core:Facet"],
+          "ioi-ext:updateReasons": "FileDelete ; FileDeleteClose",
+          "ioi-ext:updateTimestamp": { "@type": "xsd:dateTime", "@value": "2025-03-04T10:15:44Z" },
+          "ioi-ext:parentPath": "C:\\System Volume Information"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "@context": {
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "kb": "http://example.org/kb/"
+  },
+  "@graph": [
+    {
+      "@id": "kb:mft-entry--0001",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:mft-file-facet--0001",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "tracking.log",
+          "observable:filePath": "C:\\System Volume Information\\tracking.log",
+          "observable:isDirectory": { "@type": "xsd:boolean", "@value": "false" }
+        },
+        {
+          "@id": "kb:mft-custom-facet--0001",
+          "@type": ["ioi-ext:MftFacet", "core:Facet"],
+          "ioi-ext:parentPath": "C:\\System Volume Information",
+          "ioi-ext:entryNumber": { "@type": "xsd:integer", "@value": "101" }
+        }
+      ]
+    },
+    {
+      "@id": "kb:mft-entry--0002",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:mft-file-facet--0002",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "IndexerVolumeGuid",
+          "observable:filePath": "C:\\System Volume Information\\IndexerVolumeGuid",
+          "observable:isDirectory": { "@type": "xsd:boolean", "@value": "false" }
+        },
+        {
+          "@id": "kb:mft-custom-facet--0002",
+          "@type": ["ioi-ext:MftFacet", "core:Facet"],
+          "ioi-ext:parentPath": "C:\\System Volume Information",
+          "ioi-ext:entryNumber": { "@type": "xsd:integer", "@value": "102" }
+        }
+      ]
+    }
+  ]
+}

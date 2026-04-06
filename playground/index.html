@@ -13,8 +13,8 @@
   await init();
   window.OxigraphStore = Store;
   window.oxReady = true;
-  // If a file was loaded before WASM finished, build the store now
-  if (window._rawJsonLd) buildOxStore();
+  // If files were loaded before WASM finished, build the store now
+  if (window._pendingBuildOxStore) window._pendingBuildOxStore();
 </script>
 <style>
 /* ===== RESET & BASE ===== */
@@ -253,20 +253,20 @@ body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;o
 <div class="drop-zone" id="dropZone">
   <div class="drop-target">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="drop-label" id="dropLabel">Drop .jsonld file or</span>
-    <button class="btn btn-primary" id="fileBtn" type="button">Choose File</button>
-    <input type="file" id="fileInput" accept=".jsonld,.json" style="display:none">
+    <span class="drop-label" id="dropLabel">Drop one or more .jsonld files or</span>
+    <button class="btn btn-primary" id="fileBtn" type="button">Choose Files</button>
+    <input type="file" id="fileInput" accept=".jsonld,.json" multiple style="display:none">
     <span class="drop-label" style="margin-left:4px">or</span>
     <input type="text" class="url-input" id="urlInput" placeholder="Paste raw .jsonld URL…">
     <button class="btn btn-outline" id="urlBtn" type="button">Load URL</button>
-    <div class="file-info" id="fileInfo" style="display:none">
-      <span class="file-name" id="fileName"></span>
-      <div class="file-stats">
-        <span class="stat">Nodes: <span class="stat-val" id="statNodes">0</span></span>
-        <span class="stat">Triples: <span class="stat-val" id="statTriples">0</span></span>
-        <span class="stat">Types: <span class="stat-val" id="statTypes">0</span></span>
-      </div>
+  </div>
+  <!-- Loaded graphs list -->
+  <div id="graphList" style="display:none;padding:8px 16px 4px;border-top:1px solid var(--border);font-size:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="color:var(--text-muted);font-weight:500;letter-spacing:0.05em;text-transform:uppercase;font-size:11px;">Loaded Graphs</span>
+      <button id="clearAllBtn" class="btn btn-outline" style="font-size:11px;padding:2px 8px;height:auto;">Clear All</button>
     </div>
+    <div id="graphRows"></div>
   </div>
 </div>
 
@@ -358,7 +358,8 @@ body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;o
           <span class="toolbar-title">Query Editor</span>
           <div class="sparql-examples">
             <button class="example-btn" data-example="types">All Types</button>
-            <button class="example-btn" data-example="timestomping">Timestomping</button>
+            <button class="example-btn" data-example="filenames">File Names</button>
+            <button class="example-btn" data-example="ioi004">IOI-004 VSS Purge</button>
             <button class="example-btn" data-example="count">Count by Type</button>
           </div>
         </div>
@@ -399,16 +400,19 @@ body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;o
 'use strict';
 
 // ---- State ----
-let rawData = null;        // Original JSON-LD
-let graphEntries = [];     // @graph array (flat, with facets promoted)
-let allNodes = [];         // { id, type, label, data, isFacet, category }
-let allLinks = [];         // { source, target }
-let tripleStore = [];      // { s, p, o } for SPARQL
-let tableRows = [];        // flat row data for table
-let tableColumns = [];     // column defs
+let rawData = null;
+let graphEntries = [];
+let allNodes = [];
+let allLinks = [];
+let tripleStore = [];      // merged triples from all graphs (for graph/table view)
+let tableRows = [];
+let tableColumns = [];
 let sortCol = null;
 let sortDir = 'asc';
 let selectedNode = null;
+
+// Named graph registry: graphIri -> { filename, triples: [], nodeCount, tripleCount }
+const namedGraphs = new Map();
 
 // ---- DOM refs ----
 const $ = s => document.querySelector(s);
@@ -420,11 +424,9 @@ const fileBtn = $('#fileBtn');
 const urlInput = $('#urlInput');
 const urlBtn = $('#urlBtn');
 const dropLabel = $('#dropLabel');
-const fileInfo = $('#fileInfo');
-const fileNameEl = $('#fileName');
-const statNodes = $('#statNodes');
-const statTriples = $('#statTriples');
-const statTypes = $('#statTypes');
+const graphList = $('#graphList');
+const graphRows = $('#graphRows');
+const clearAllBtn = $('#clearAllBtn');
 
 const graphContainer = $('#graphContainer');
 const graphSearch = $('#graphSearch');
@@ -466,28 +468,51 @@ $$('.tab-btn').forEach(btn => {
 
 // ---- File Loading ----
 fileBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+fileInput.addEventListener('change', e => {
+  Array.from(e.target.files).forEach(f => loadFile(f));
+  fileInput.value = '';
+});
 
-// Drag & drop
+// Drag & drop — accept multiple files
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => {
   e.preventDefault();
   dropZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) loadFile(file);
+  Array.from(e.dataTransfer.files).forEach(f => loadFile(f));
 });
 
 // URL loading
 urlBtn.addEventListener('click', loadFromUrl);
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrl(); });
 
+// Clear all
+clearAllBtn.addEventListener('click', () => {
+  namedGraphs.clear();
+  tripleStore = [];
+  allNodes = []; allLinks = []; graphEntries = []; tableRows = []; tableColumns = [];
+  oxStore = null;
+  renderGraphList();
+  renderGraph(); renderTable();
+});
+
+function guessGraphIri(filename) {
+  const stem = filename.replace(/\.(jsonld|json)$/i, '').toLowerCase();
+  if (stem.includes('mft')) return 'http://example.org/mft_case4';
+  if (stem.includes('usn')) return 'http://example.org/usn_case4';
+  if (stem.includes('evtx') || stem.includes('security')) return 'http://example.org/evtx_case';
+  if (stem.includes('lnk')) return 'http://example.org/lnk_case';
+  if (stem.includes('office') || stem.includes('docx')) return 'http://example.org/office_case';
+  return `http://example.org/${stem.replace(/[^a-z0-9_]/g, '_')}`;
+}
+
 function loadFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      processData(data, file.name);
+      const graphIri = guessGraphIri(file.name);
+      addGraph(data, file.name, graphIri);
     } catch(err) {
       alert('Failed to parse JSON-LD: ' + err.message);
     }
@@ -498,31 +523,100 @@ function loadFile(file) {
 function loadFromUrl() {
   const url = urlInput.value.trim();
   if (!url) return;
-  dropLabel.textContent = 'Loading…';
   fetch(url)
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
       const name = url.split('/').pop() || 'remote.jsonld';
-      processData(data, name);
+      addGraph(data, name, guessGraphIri(name));
     })
-    .catch(err => {
-      alert('Failed to load URL: ' + err.message);
-      dropLabel.textContent = 'Drop .jsonld file or';
+    .catch(err => alert('Failed to load URL: ' + err.message));
+}
+
+function addGraph(data, filename, graphIri) {
+  // Build triples for this graph
+  const { triples, nodes, links } = buildGraphData(data);
+  namedGraphs.set(graphIri, { filename, triples, nodeCount: nodes.length, tripleCount: triples.length, data });
+
+  // Merge into global state for graph/table view
+  tripleStore = tripleStore.concat(triples);
+  allNodes = allNodes.concat(nodes);
+  allLinks = allLinks.concat(links);
+  graphEntries = graphEntries.concat(data['@graph'] || (Array.isArray(data) ? data : [data]));
+
+  renderGraphList();
+  buildTableData(graphEntries);
+  renderTable();
+  buildOxStore();
+  renderGraph();
+  // Switch to graph tab
+  $$('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  $$('.tab-panel').forEach(p => p.classList.remove('active'));
+  $('[data-tab="graph"]').classList.add('active');
+  $('[data-tab="graph"]').setAttribute('aria-selected','true');
+  $('#panel-graph').classList.add('active');
+}
+
+function renderGraphList() {
+  if (namedGraphs.size === 0) {
+    graphList.style.display = 'none';
+    graphRows.innerHTML = '';
+    return;
+  }
+  graphList.style.display = 'block';
+  graphRows.innerHTML = '';
+  namedGraphs.forEach(({ filename, tripleCount }, iri) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border-light);font-size:12px;';
+    row.innerHTML = `
+      <span style="color:var(--text);font-weight:500;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${filename}">${filename}</span>
+      <input type="text" value="${iri}" style="flex:1;background:var(--surface-3);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text-muted);font-size:11px;font-family:var(--mono,monospace)" data-iri="${iri}">
+      <span style="color:var(--text-muted);white-space:nowrap">${tripleCount} triples</span>
+      <button data-remove="${iri}" style="color:var(--text-faint);padding:2px 4px;font-size:13px;line-height:1" title="Remove">✕</button>
+    `;
+    // Allow editing graph IRI
+    row.querySelector('input').addEventListener('change', e => {
+      const oldIri = e.target.dataset.iri;
+      const newIri = e.target.value.trim();
+      if (newIri && newIri !== oldIri) {
+        const entry = namedGraphs.get(oldIri);
+        namedGraphs.delete(oldIri);
+        namedGraphs.set(newIri, entry);
+        e.target.dataset.iri = newIri;
+        buildOxStore();
+      }
     });
+    row.querySelector('[data-remove]').addEventListener('click', e => {
+      const iri = e.target.dataset.remove;
+      namedGraphs.delete(iri);
+      rebuildMergedState();
+      renderGraphList();
+      buildOxStore();
+      renderGraph(); renderTable();
+    });
+    graphRows.appendChild(row);
+  });
+}
+
+function rebuildMergedState() {
+  tripleStore = []; allNodes = []; allLinks = []; graphEntries = []; tableRows = []; tableColumns = [];
+  namedGraphs.forEach(({ triples, data }) => {
+    const { nodes, links } = buildGraphData(data);
+    tripleStore = tripleStore.concat(triples);
+    allNodes = allNodes.concat(nodes);
+    allLinks = allLinks.concat(links);
+    graphEntries = graphEntries.concat(data['@graph'] || (Array.isArray(data) ? data : [data]));
+  });
+  buildTableData(graphEntries);
 }
 
 // ---- Data Processing ----
-function processData(data, filename) {
-  rawData = data;
-  window._rawJsonLd = JSON.stringify(data);
+// buildGraphData: pure — returns {triples, nodes, links} without mutating global state
+function buildGraphData(data) {
   window._jsonLdContext = data['@context'] || {};
   const graph = data['@graph'] || (Array.isArray(data) ? data : [data]);
-  graphEntries = graph;
-
-  // Build nodes, links, triples
-  allNodes = [];
-  allLinks = [];
-  tripleStore = [];
+  const nodes = [];
+  const links = [];
+  const triples = [];
   const nodeMap = new Map();
 
   function getShortId(id) {
@@ -563,7 +657,8 @@ function processData(data, filename) {
 
   function getNodeLabel(entry) {
     // Priority 1: Look for fileName in facets
-    const facets = entry['uco-core:hasFacet'] || entry['hasFacet'] || [];
+    const _hfk = ['core:hasFacet', 'uco-core:hasFacet', 'hasFacet'].find(k => k in entry);
+    const facets = (_hfk && entry[_hfk]) || [];
     const facetArr = Array.isArray(facets) ? facets : [facets];
     for (const f of facetArr) {
       if (typeof f !== 'object') continue;
@@ -586,7 +681,7 @@ function processData(data, filename) {
     }
     // Priority 3: first non-meta property
     for (const [k, v] of Object.entries(entry)) {
-      if (k.startsWith('@') || k === 'uco-core:hasFacet' || k === 'hasFacet') continue;
+      if (k.startsWith('@') || k === 'core:hasFacet' || k === 'uco-core:hasFacet' || k === 'hasFacet') continue;
       const val = resolveValue(v);
       if (val && val.length < 60) return val;
     }
@@ -602,17 +697,20 @@ function processData(data, filename) {
     const label = getNodeLabel(entry);
 
     const node = { id, type: typeStr, label, data: entry, isFacet: false, category };
-    allNodes.push(node);
+    nodes.push(node);
     nodeMap.set(id, node);
+
+    // Detect hasFacet key — handles core:hasFacet, uco-core:hasFacet, hasFacet
+    const hasFacetKey = ['core:hasFacet', 'uco-core:hasFacet', 'hasFacet'].find(k => k in entry);
 
     // Add triples for all properties
     for (const [k, v] of Object.entries(entry)) {
-      if (k === 'uco-core:hasFacet' || k === 'hasFacet') continue;
-      tripleStore.push({ s: id, p: k, o: resolveValue(v) });
+      if (k === hasFacetKey) continue;
+      triples.push({ s: id, p: k, o: resolveValue(v) });
     }
 
     // Process facets
-    const facets = entry['uco-core:hasFacet'] || entry['hasFacet'] || [];
+    const facets = (hasFacetKey && entry[hasFacetKey]) || [];
     const facetArr = Array.isArray(facets) ? facets : [facets];
     facetArr.forEach(facet => {
       if (typeof facet !== 'object') return;
@@ -622,7 +720,6 @@ function processData(data, filename) {
       const fcategory = classifyType(ftypeStr);
       const flabel = getShortId(fid);
 
-      // Get first value as facet label
       let facetLabel = flabel;
       for (const [k, v] of Object.entries(facet)) {
         if (k === '@id' || k === '@type') continue;
@@ -632,47 +729,26 @@ function processData(data, filename) {
 
       const fnode = { id: fid, type: ftypeStr, label: facetLabel, data: facet, isFacet: true, category: fcategory };
       if (!nodeMap.has(fid)) {
-        allNodes.push(fnode);
+        nodes.push(fnode);
         nodeMap.set(fid, fnode);
       }
-      allLinks.push({ source: id, target: fid });
+      links.push({ source: id, target: fid });
 
       // Add triples for facet props
       for (const [k, v] of Object.entries(facet)) {
-        tripleStore.push({ s: fid, p: k, o: resolveValue(v) });
+        triples.push({ s: fid, p: k, o: resolveValue(v) });
       }
       // hasFacet triple
-      tripleStore.push({ s: id, p: 'uco-core:hasFacet', o: fid });
+      triples.push({ s: id, p: hasFacetKey || 'core:hasFacet', o: fid });
     });
   });
 
-  // Build table rows (flatten)
-  buildTableData(graph);
+  return { triples, nodes, links };
+}
 
-  // Stats
-  const typeSet = new Set();
-  allNodes.forEach(n => {
-    if (n.type) {
-      (Array.isArray(n.data['@type']) ? n.data['@type'] : [n.data['@type']]).forEach(t => { if (t) typeSet.add(t); });
-    }
-  });
-
-  fileNameEl.textContent = filename;
-  statNodes.textContent = allNodes.length;
-  statTriples.textContent = tripleStore.length;
-  statTypes.textContent = typeSet.size;
-  fileInfo.style.display = 'flex';
-  dropLabel.textContent = 'Loaded:';
-
-  // Build oxigraph SPARQL store
-  buildOxStore();
-
-  // Render everything
-  renderGraph();
-  renderTable();
-  graphLegend.style.display = 'flex';
-  graphEmpty.style.display = 'none';
-  tableEmpty.style.display = 'none';
+// Legacy wrapper — kept for URL loader compat
+function processData(data, filename) {
+  addGraph(data, filename, guessGraphIri(filename));
 }
 
 // ---- GRAPH VISUALIZATION ----
@@ -684,6 +760,14 @@ let zoom = null;
 function renderGraph() {
   // Clear old
   graphContainer.querySelectorAll('svg.graph-svg').forEach(el => el.remove());
+
+  if (!allNodes.length) {
+    graphEmpty.style.display = 'flex';
+    graphLegend.style.display = 'none';
+    return;
+  }
+  graphEmpty.style.display = 'none';
+  graphLegend.style.display = 'flex';
 
   const isLarge = allNodes.length > 100;
   if (isLarge) {
@@ -1003,7 +1087,11 @@ function renderTable() {
   const oldTable = tableWrap.querySelector('table');
   if (oldTable) oldTable.remove();
 
-  if (!tableRows.length) return;
+  if (!tableRows.length) {
+    tableEmpty.style.display = 'flex';
+    return;
+  }
+  tableEmpty.style.display = 'none';
 
   const filter = tableSearch.value.toLowerCase().trim();
   let rows = tableRows;
@@ -1110,26 +1198,72 @@ tableSearch.addEventListener('input', () => {
 let oxStore = null; // oxigraph Store instance
 
 const exampleQueries = {
-  types: `PREFIX uco-core: <https://ontology.unifiedcyberontology.org/uco/core/>
-PREFIX uco-observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
-PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
-
-SELECT DISTINCT ?type WHERE {
+  types: `SELECT DISTINCT ?type WHERE {
   ?s a ?type .
 }`,
-  timestomping: `PREFIX uco-core: <https://ontology.unifiedcyberontology.org/uco/core/>
+  filenames: `PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
+
+SELECT ?name WHERE {
+  ?s observable:fileName ?name .
+}
+ORDER BY ?name`,
+  ioi004: `PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT ?entry ?created0x10 ?created0x30 WHERE {
-  ?entry uco-core:hasFacet ?facet .
-  ?facet ioi-ext:mftCreated0x10 ?created0x10 .
-  ?facet ioi-ext:mftCreated0x30 ?created0x30 .
-  FILTER(?created0x10 != ?created0x30)
+# IOI-004: VSS Purge Detection
+# Load mft_test.jsonld as http://example.org/mft_case4
+# Load usn_test.jsonld as http://example.org/usn_case4
+SELECT DISTINCT ?deleted_guid ?usn_evidence WHERE {
+  {
+    FILTER NOT EXISTS {
+      GRAPH <http://example.org/mft_case4> {
+        ?e a observable:File ;
+           core:hasFacet ?ff, ?mf .
+        ?ff observable:fileName ?n .
+        ?mf ioi-ext:parentPath ?p .
+        FILTER(CONTAINS(?p, "System Volume Information"))
+        FILTER(STRSTARTS(STR(?n), "Apps_{"))
+      }
+    }
+    GRAPH <http://example.org/usn_case4> {
+      ?uf a observable:File ;
+          core:hasFacet ?uff, ?umf .
+      ?uff observable:fileName ?usn_filename .
+      ?umf ioi-ext:updateReasons ?update_reasons .
+      FILTER(STRSTARTS(STR(?usn_filename), "Apps_{"))
+      FILTER(CONTAINS(?update_reasons, "FileDelete"))
+      BIND(?usn_filename AS ?deleted_guid)
+      BIND(?update_reasons AS ?usn_evidence)
+    }
+  } UNION {
+    FILTER NOT EXISTS {
+      GRAPH <http://example.org/mft_case4> {
+        ?e a observable:File ;
+           core:hasFacet ?ff, ?mf .
+        ?ff observable:fileName ?n .
+        ?mf ioi-ext:parentPath ?p .
+        FILTER(CONTAINS(?p, "System Volume Information"))
+        FILTER(STRSTARTS(STR(?n), "{"))
+        FILTER(STRENDS(STR(?n), "}"))
+        FILTER(STRLEN(STR(?n)) = 38)
+      }
+    }
+    GRAPH <http://example.org/usn_case4> {
+      ?uf a observable:File ;
+          core:hasFacet ?uff, ?umf .
+      ?uff observable:fileName ?usn_filename .
+      ?umf ioi-ext:updateReasons ?update_reasons .
+      FILTER(STRSTARTS(STR(?usn_filename), "{"))
+      FILTER(STRENDS(STR(?usn_filename), "}"))
+      FILTER(STRLEN(STR(?usn_filename)) = 38)
+      FILTER(CONTAINS(?update_reasons, "FileDelete"))
+      BIND(?usn_filename AS ?deleted_guid)
+      BIND(?update_reasons AS ?usn_evidence)
+    }
+  }
 }`,
-  count: `PREFIX uco-core: <https://ontology.unifiedcyberontology.org/uco/core/>
-
-SELECT ?type (COUNT(?s) AS ?count) WHERE {
+  count: `SELECT ?type (COUNT(?s) AS ?count) WHERE {
   ?s a ?type .
 }
 GROUP BY ?type
@@ -1164,7 +1298,7 @@ function runQuery() {
     return;
   }
 
-  if (!oxStore || !tripleStore.length) {
+  if (!oxStore || namedGraphs.size === 0) {
     runStatus.textContent = 'No data loaded';
     runStatus.className = 'run-status error';
     return;
@@ -1196,27 +1330,27 @@ function runQuery() {
   }
 }
 
-// Build oxigraph store from tripleStore array
+// Build oxigraph store — each named graph loaded with its IRI
+window._pendingBuildOxStore = function() { buildOxStore(); };
 function buildOxStore() {
   if (!window.oxReady || !window.OxigraphStore) return;
   oxStore = new window.OxigraphStore();
 
-  // Load from the raw JSON-LD string (oxigraph can parse it directly)
-  if (window._rawJsonLd) {
-    try {
-      oxStore.load(window._rawJsonLd, 'application/ld+json', null, null);
-    } catch(e) {
-      console.warn('oxigraph JSON-LD load failed, falling back to N-Triples:', e);
-      // Fallback: build N-Triples from our tripleStore
-      loadFromTripleStore();
+  namedGraphs.forEach(({ triples }, graphIri) => {
+    const lines = buildNTriplesFromTriples(triples);
+    console.log(`Loading graph <${graphIri}>: ${lines.length} N-Triples`);
+    if (lines.length) {
+      try {
+        oxStore.load(lines.join('\n'), 'application/n-triples', null, graphIri);
+      } catch(e) {
+        console.warn(`N-Triples load error for <${graphIri}>:`, e);
+      }
     }
-  } else {
-    loadFromTripleStore();
-  }
+  });
 }
 
-function loadFromTripleStore() {
-  // Convert our {s, p, o} triples to N-Triples format for oxigraph
+function buildNTriplesFromTriples(inputTriples) {
+  // Convert {s, p, o} triples to N-Triples strings for oxigraph
   const ctx = window._jsonLdContext || {};
 
   // Build flat prefix map — handles both string and object context entries
@@ -1242,7 +1376,7 @@ function loadFromTripleStore() {
   }
 
   const lines = [];
-  tripleStore.forEach(t => {
+  inputTriples.forEach(t => {
     const s = expandIRI(t.s);
     const p = t.p === '@type'
       ? 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
@@ -1281,14 +1415,7 @@ function loadFromTripleStore() {
     lines.push(`${sTerm} <${p}> ${oTerm} .`);
   });
 
-  console.log(`N-Triples generated: ${lines.length} triples`);
-  if (lines.length) {
-    try {
-      oxStore.load(lines.join('\n'), 'application/n-triples');
-    } catch(e) {
-      console.warn('N-Triples load error:', e);
-    }
-  }
+  return lines;
 }
 
 function displayResults(result) {

@@ -1,0 +1,22 @@
+<http://example.org/kb/usn-custom-facet--0001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ioi-framework.github.io/ns/ioi-ext/UsnFacet> .
+<http://example.org/kb/usn-custom-facet--0001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/core/Facet> .
+<http://example.org/kb/usn-custom-facet--0001> <https://ioi-framework.github.io/ns/ioi-ext/parentPath> "C:\\System Volume Information" .
+<http://example.org/kb/usn-custom-facet--0001> <https://ioi-framework.github.io/ns/ioi-ext/updateReasons> "FileDelete ; FileDeleteClose" .
+<http://example.org/kb/usn-custom-facet--0001> <https://ioi-framework.github.io/ns/ioi-ext/updateTimestamp> "2025-03-04T10:15:43Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.org/kb/usn-custom-facet--0002> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ioi-framework.github.io/ns/ioi-ext/UsnFacet> .
+<http://example.org/kb/usn-custom-facet--0002> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/core/Facet> .
+<http://example.org/kb/usn-custom-facet--0002> <https://ioi-framework.github.io/ns/ioi-ext/parentPath> "C:\\System Volume Information" .
+<http://example.org/kb/usn-custom-facet--0002> <https://ioi-framework.github.io/ns/ioi-ext/updateReasons> "FileDelete ; FileDeleteClose" .
+<http://example.org/kb/usn-custom-facet--0002> <https://ioi-framework.github.io/ns/ioi-ext/updateTimestamp> "2025-03-04T10:15:44Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.org/kb/usn-entry--0001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/File> .
+<http://example.org/kb/usn-entry--0001> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/usn-custom-facet--0001> .
+<http://example.org/kb/usn-entry--0001> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/usn-file-facet--0001> .
+<http://example.org/kb/usn-entry--0002> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/File> .
+<http://example.org/kb/usn-entry--0002> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/usn-custom-facet--0002> .
+<http://example.org/kb/usn-entry--0002> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/usn-file-facet--0002> .
+<http://example.org/kb/usn-file-facet--0001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/FileFacet> .
+<http://example.org/kb/usn-file-facet--0001> <https://ontology.unifiedcyberontology.org/uco/observable/fileName> "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}" .
+<http://example.org/kb/usn-file-facet--0001> <https://ontology.unifiedcyberontology.org/uco/observable/filePath> "C:\\System Volume Information\\{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}" .
+<http://example.org/kb/usn-file-facet--0002> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/FileFacet> .
+<http://example.org/kb/usn-file-facet--0002> <https://ontology.unifiedcyberontology.org/uco/observable/fileName> "Apps_{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}" .
+<http://example.org/kb/usn-file-facet--0002> <https://ontology.unifiedcyberontology.org/uco/observable/filePath> "C:\\System Volume Information\\Apps_{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}" .
