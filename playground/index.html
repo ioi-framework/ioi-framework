@@ -9,9 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://d3js.org/d3.v7.min.js" defer></script>
 <script type="module" id="oxigraph-loader">
-  import init, { Store } from 'https://cdn.jsdelivr.net/npm/oxigraph@0.4.0-alpha.7/web.js';
+  import init, * as oxigraph from 'https://cdn.jsdelivr.net/npm/oxigraph@0.4.0-alpha.7/web.js';
   await init();
-  window.OxigraphStore = Store;
+  window.OxigraphStore = oxigraph.Store;
+  window.oxigraph = oxigraph;
   window.oxReady = true;
   // If files were loaded before WASM finished, build the store now
   if (window._pendingBuildOxStore) window._pendingBuildOxStore();
@@ -1345,18 +1346,26 @@ function buildOxStore() {
   if (!window.oxReady || !window.OxigraphStore) return;
   oxStore = new window.OxigraphStore();
 
+  // Build N-Quads (4th element = graph IRI) for named graph support
+  const allQuads = [];
   namedGraphs.forEach(({ triples }, graphIri) => {
     const lines = buildNTriplesFromTriples(triples);
-    console.log(`Loading graph <${graphIri}>: ${lines.length} N-Triples`);
-    if (lines.length) {
-      console.log('First 10 N-Triples:', lines.slice(0, 10));
-      try {
-        oxStore.load(lines.join('\n'), { format: 'nt', toNamedGraph: graphIri });
-      } catch(e) {
-        console.warn(`N-Triples load error for <${graphIri}>:`, e);
-      }
-    }
+    // Convert N-Triples to N-Quads by inserting graph IRI before the dot
+    lines.forEach(line => {
+      const quad = line.replace(/ \.$/, ` <${graphIri}> .`);
+      allQuads.push(quad);
+    });
+    console.log(`Graph <${graphIri}>: ${lines.length} triples`);
   });
+
+  if (allQuads.length) {
+    try {
+      oxStore.load(allQuads.join('\n'), { format: 'nq' });
+      console.log(`Loaded ${allQuads.length} quads into oxigraph`);
+    } catch(e) {
+      console.warn('N-Quads load error:', e);
+    }
+  }
 }
 
 function buildNTriplesFromTriples(inputTriples) {
