@@ -1360,10 +1360,17 @@ function buildOxStore() {
 
   if (allQuads.length) {
     try {
+      // Load as N-Quads (named graphs for GRAPH <iri> queries)
       oxStore.load(allQuads.join('\n'), { format: 'nq' });
-      console.log(`Loaded ${allQuads.length} quads into oxigraph`);
+      // Also load as N-Triples into default graph (for simple queries without GRAPH)
+      const allTriples = [];
+      namedGraphs.forEach(({ triples }) => {
+        allTriples.push(...buildNTriplesFromTriples(triples));
+      });
+      oxStore.load(allTriples.join('\n'), { format: 'nt' });
+      console.log(`Loaded ${allQuads.length} quads + ${allTriples.length} default triples`);
     } catch(e) {
-      console.warn('N-Quads load error:', e);
+      console.warn('N-Quads/N-Triples load error:', e);
     }
   }
 }
