@@ -706,7 +706,12 @@ function buildGraphData(data) {
     // Add triples for all properties
     for (const [k, v] of Object.entries(entry)) {
       if (k === hasFacetKey) continue;
-      triples.push({ s: id, p: k, o: resolveValue(v) });
+      // @type arrays emit one triple per type
+      if (k === '@type' && Array.isArray(v)) {
+        v.forEach(t => triples.push({ s: id, p: '@type', o: t }));
+      } else {
+        triples.push({ s: id, p: k, o: resolveValue(v) });
+      }
     }
 
     // Process facets
@@ -736,7 +741,11 @@ function buildGraphData(data) {
 
       // Add triples for facet props
       for (const [k, v] of Object.entries(facet)) {
-        triples.push({ s: fid, p: k, o: resolveValue(v) });
+        if (k === '@type' && Array.isArray(v)) {
+          v.forEach(t => triples.push({ s: fid, p: '@type', o: t }));
+        } else {
+          triples.push({ s: fid, p: k, o: resolveValue(v) });
+        }
       }
       // hasFacet triple
       triples.push({ s: id, p: hasFacetKey || 'core:hasFacet', o: fid });
@@ -1340,8 +1349,9 @@ function buildOxStore() {
     const lines = buildNTriplesFromTriples(triples);
     console.log(`Loading graph <${graphIri}>: ${lines.length} N-Triples`);
     if (lines.length) {
+      console.log('First 10 N-Triples:', lines.slice(0, 10));
       try {
-        oxStore.load(lines.join('\n'), 'application/n-triples', null, graphIri);
+        oxStore.load(lines.join('\n'), { format: 'nt', toNamedGraph: graphIri });
       } catch(e) {
         console.warn(`N-Triples load error for <${graphIri}>:`, e);
       }
