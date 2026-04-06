@@ -1218,13 +1218,25 @@ function buildOxStore() {
 function loadFromTripleStore() {
   // Convert our {s, p, o} triples to N-Triples format for oxigraph
   const ctx = window._jsonLdContext || {};
+
+  // Build flat prefix map — handles both string and object context entries
+  const prefixMap = {};
+  for (const [k, v] of Object.entries(ctx)) {
+    if (typeof v === 'string' && v.startsWith('http')) {
+      prefixMap[k] = v;
+    } else if (v && typeof v === 'object' && typeof v['@id'] === 'string') {
+      prefixMap[k] = v['@id'];
+    }
+  }
+
   function expandIRI(val) {
-    if (!val || val.startsWith('http')) return val;
+    if (!val) return val;
+    if (val.startsWith('http') || val.startsWith('_:')) return val;
     const idx = val.indexOf(':');
     if (idx > 0) {
       const prefix = val.substring(0, idx);
       const local = val.substring(idx + 1);
-      if (ctx[prefix]) return ctx[prefix] + local;
+      if (prefixMap[prefix]) return prefixMap[prefix] + local;
     }
     return val;
   }
@@ -1235,19 +1247,41 @@ function loadFromTripleStore() {
     const p = t.p === '@type'
       ? 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
       : expandIRI(t.p);
-    const o = expandIRI(t.o);
 
-    if (!s || !p || !o) return;
-    if (s.startsWith('http') && p.startsWith('http')) {
-      if (o.startsWith('http')) {
-        lines.push(`<${s}> <${p}> <${o}> .`);
+    if (!s || !p) return;
+    if (!s.startsWith('http') && !s.startsWith('_:')) return;
+    if (!p.startsWith('http')) return;
+
+    // Handle object — IRI, blank node, or typed/plain literal
+    const oRaw = t.o;
+    let oTerm = null;
+
+    if (oRaw && typeof oRaw === 'object' && oRaw['@value'] !== undefined) {
+      // Typed literal: { "@value": "...", "@type": "xsd:dateTime" }
+      const val = String(oRaw['@value']).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+      if (oRaw['@type']) {
+        const dtype = expandIRI(oRaw['@type']) || oRaw['@type'];
+        oTerm = dtype.startsWith('http') ? `"${val}"^^<${dtype}>` : `"${val}"`;
       } else {
-        const escaped = o.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-        lines.push(`<${s}> <${p}> "${escaped}" .`);
+        oTerm = `"${val}"`;
+      }
+    } else {
+      const oExp = expandIRI(typeof oRaw === 'string' ? oRaw : String(oRaw));
+      if (oExp && (oExp.startsWith('http') || oExp.startsWith('_:'))) {
+        oTerm = oExp.startsWith('_:') ? oExp : `<${oExp}>`;
+      } else if (oExp) {
+        const escaped = oExp.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        oTerm = `"${escaped}"`;
       }
     }
+
+    if (!oTerm) return;
+
+    const sTerm = s.startsWith('_:') ? s : `<${s}>`;
+    lines.push(`${sTerm} <${p}> ${oTerm} .`);
   });
 
+  console.log(`N-Triples generated: ${lines.length} triples`);
   if (lines.length) {
     try {
       oxStore.load(lines.join('\n'), 'application/n-triples');
