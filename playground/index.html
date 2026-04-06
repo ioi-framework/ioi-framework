@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoI Framework — Graph Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js" defer></script>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+body{min-height:100dvh;line-height:1.6;font-family:'Inter',system-ui,sans-serif;font-size:14px}
+img,picture,video,canvas,svg{display:block;max-width:100%;height:auto}
+input,button,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+table{border-collapse:collapse;width:100%}
+a,button,[role='button'],input,textarea,select{transition:color 180ms cubic-bezier(.16,1,.3,1),background 180ms cubic-bezier(.16,1,.3,1),border-color 180ms cubic-bezier(.16,1,.3,1),box-shadow 180ms cubic-bezier(.16,1,.3,1)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== DESIGN TOKENS ===== */
+:root,[data-theme="dark"]{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface-2:#1c2128;
+  --surface-3:#21262d;
+  --border:#30363d;
+  --border-light:#21262d;
+  --text:#e6edf3;
+  --text-muted:#8b949e;
+  --text-faint:#484f58;
+  --accent:#58a6ff;
+  --accent-hover:#79b8ff;
+  --accent-dim:rgba(88,166,255,0.15);
+  --orange:#f0883e;
+  --orange-dim:rgba(240,136,62,0.15);
+  --gray-node:#8b949e;
+  --gray-dim:rgba(139,148,158,0.15);
+  --green:#3fb950;
+  --green-dim:rgba(63,185,80,0.15);
+  --red:#f85149;
+  --red-dim:rgba(248,81,73,0.15);
+  --radius-sm:4px;
+  --radius-md:6px;
+  --radius-lg:8px;
+  --mono:'JetBrains Mono',ui-monospace,'Cascadia Code',monospace;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
+}
+
+/* ===== LAYOUT ===== */
+body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden;height:100dvh}
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:48px;display:flex;align-items:center;gap:16px;flex-shrink:0;z-index:100}
+.app-header .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.app-header .logo svg{width:28px;height:28px;flex-shrink:0}
+.app-header .logo-text{font-weight:700;font-size:15px;letter-spacing:-0.02em;white-space:nowrap}
+.app-header .logo-text span{color:var(--text-muted);font-weight:400}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Drop zone */
+.drop-zone{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.drop-zone.drag-over{background:var(--accent-dim);border-color:var(--accent)}
+.drop-target{flex:1;display:flex;align-items:center;gap:12px;min-width:0}
+.drop-target .drop-label{color:var(--text-muted);font-size:13px;white-space:nowrap}
+.drop-target .file-info{display:flex;align-items:center;gap:8px;min-width:0}
+.file-info .file-name{font-weight:600;font-size:13px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.file-info .file-stats{display:flex;gap:12px}
+.file-info .stat{font-size:12px;color:var(--text-muted);font-family:var(--mono);white-space:nowrap}
+.stat .stat-val{color:var(--text);font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius-md);font-size:13px;font-weight:500;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#0d1117;font-weight:600}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-outline{border:1px solid var(--border);color:var(--text-muted)}
+.btn-outline:hover{border-color:var(--text-muted);color:var(--text)}
+.url-input{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:6px 10px;font-size:13px;color:var(--text);width:260px;font-family:var(--mono)}
+.url-input::placeholder{color:var(--text-faint)}
+.url-input:focus{border-color:var(--accent);outline:none}
+
+/* Tabs */
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;flex-shrink:0}
+.tab-btn{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;position:relative;top:1px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{flex:1;overflow:hidden;position:relative}
+.tab-panel{position:absolute;inset:0;display:none;overflow:hidden;background:var(--bg);z-index:1}
+.tab-panel.active{display:flex;z-index:2}
+
+/* ===== GRAPH TAB ===== */
+.graph-panel{display:flex;overflow:hidden}
+.graph-container{flex:1;position:relative;overflow:hidden}
+.graph-container svg{width:100%;height:100%;display:block}
+.graph-controls{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;z-index:10}
+.graph-search{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:7px 10px 7px 32px;font-size:13px;color:var(--text);width:240px;position:relative}
+.graph-search-wrap{position:relative}
+.graph-search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-faint);pointer-events:none;width:14px;height:14px}
+.graph-search:focus{border-color:var(--accent);outline:none}
+.graph-search::placeholder{color:var(--text-faint)}
+.graph-slider-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:8px 12px;display:none;font-size:12px;color:var(--text-muted)}
+.graph-slider-wrap.visible{display:block}
+.graph-slider-wrap label{display:flex;align-items:center;gap:8px}
+.graph-slider-wrap input[type="range"]{flex:1;accent-color:var(--accent);height:4px}
+.graph-slider-val{font-family:var(--mono);color:var(--text);font-weight:600;min-width:32px;text-align:right}
+.graph-legend{position:absolute;bottom:12px;left:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 14px;display:flex;gap:16px;font-size:12px;z-index:10}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* Node tooltip */
+.node-tooltip{position:absolute;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:8px 12px;font-size:12px;pointer-events:none;z-index:50;max-width:300px;box-shadow:var(--shadow-md);display:none}
+.node-tooltip .tt-type{color:var(--accent);font-family:var(--mono);font-size:11px;margin-bottom:2px}
+.node-tooltip .tt-label{font-weight:600}
+
+/* Sidebar */
+.node-sidebar{width:380px;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;display:none;flex-direction:column}
+.node-sidebar.open{display:flex}
+.sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:start;gap:10px}
+.sidebar-header .sidebar-title{flex:1;min-width:0}
+.sidebar-header .sidebar-id{font-family:var(--mono);font-size:11px;color:var(--text-muted);word-break:break-all}
+.sidebar-header .sidebar-type{display:inline-flex;padding:2px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;margin-top:4px}
+.type-uco{background:var(--accent-dim);color:var(--accent)}
+.type-ioi{background:var(--orange-dim);color:var(--orange)}
+.type-facet{background:var(--gray-dim);color:var(--gray-node)}
+.sidebar-close{color:var(--text-muted);padding:4px}
+.sidebar-close:hover{color:var(--text)}
+.sidebar-body{flex:1;overflow-y:auto;padding:0}
+.sidebar-section{border-bottom:1px solid var(--border)}
+.sidebar-section-title{padding:10px 16px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;background:var(--surface-2)}
+.prop-list{padding:0}
+.prop-row{display:flex;padding:6px 16px;border-bottom:1px solid var(--border-light);font-size:12px;align-items:baseline;gap:8px}
+.prop-key{color:var(--text-muted);font-family:var(--mono);font-size:11px;min-width:120px;flex-shrink:0;word-break:break-all}
+.prop-val{color:var(--text);word-break:break-all;font-family:var(--mono);font-size:11px}
+.prop-val.date{color:var(--green)}
+.prop-val.number{color:var(--orange)}
+.prop-val.bool-true{color:var(--green)}
+.prop-val.bool-false{color:var(--red)}
+
+/* ===== TABLE TAB ===== */
+.table-panel{flex-direction:column;overflow:hidden}
+.table-toolbar{padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.table-search{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:6px 10px;font-size:13px;color:var(--text);width:300px}
+.table-search:focus{border-color:var(--accent);outline:none}
+.table-search::placeholder{color:var(--text-faint)}
+.table-info{font-size:12px;color:var(--text-muted);margin-left:auto;font-family:var(--mono)}
+.table-wrap{flex:1;overflow:auto;position:relative}
+.data-table{font-size:12px;font-family:var(--mono)}
+.data-table thead{position:sticky;top:0;z-index:5}
+.data-table th{background:var(--surface-2);padding:8px 12px;text-align:left;font-weight:600;color:var(--text-muted);border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;user-select:none;font-size:11px;text-transform:uppercase;letter-spacing:0.03em}
+.data-table th:hover{color:var(--text)}
+.data-table th .sort-arrow{margin-left:4px;opacity:0.4}
+.data-table th.sorted .sort-arrow{opacity:1;color:var(--accent)}
+.data-table td{padding:6px 12px;border-bottom:1px solid var(--border-light);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-size:11px}
+.data-table tr:hover td{background:var(--surface-2)}
+.data-table .cell-date{color:var(--green)}
+.data-table .cell-number{color:var(--orange)}
+.data-table .cell-bool{font-weight:600}
+.data-table .cell-bool-true{color:var(--green)}
+.data-table .cell-bool-false{color:var(--red)}
+.data-table .cell-type{color:var(--accent)}
+
+/* ===== SPARQL TAB ===== */
+.sparql-panel{flex-direction:column;overflow:hidden}
+.sparql-top{display:flex;flex:1;overflow:hidden}
+.sparql-editor-col{width:50%;display:flex;flex-direction:column;border-right:1px solid var(--border)}
+.sparql-results-col{width:50%;display:flex;flex-direction:column;overflow:hidden}
+.sparql-toolbar{padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sparql-toolbar .toolbar-title{font-size:13px;font-weight:600}
+.sparql-examples{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.example-btn{font-size:11px;padding:4px 8px;border-radius:var(--radius-sm);background:var(--surface-3);color:var(--text-muted);border:1px solid var(--border)}
+.example-btn:hover{color:var(--text);border-color:var(--text-faint)}
+.sparql-textarea{flex:1;background:var(--bg);color:var(--accent);font-family:var(--mono);font-size:13px;line-height:1.6;padding:16px;border:none;resize:none;outline:none;tab-size:2}
+.sparql-textarea::placeholder{color:var(--text-faint)}
+.sparql-run-bar{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.run-status{font-size:12px;color:var(--text-muted);font-family:var(--mono)}
+.run-status.error{color:var(--red)}
+.run-status.success{color:var(--green)}
+.results-toolbar{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;flex-shrink:0}
+.results-wrap{flex:1;overflow:auto;padding:0}
+.results-table{font-size:12px;font-family:var(--mono)}
+.results-table th{background:var(--surface-2);padding:8px 12px;text-align:left;font-weight:600;color:var(--text-muted);border-bottom:2px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.03em;position:sticky;top:0}
+.results-table td{padding:6px 12px;border-bottom:1px solid var(--border-light);max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;gap:16px;padding:40px;color:var(--text-muted)}
+.empty-state svg{width:48px;height:48px;opacity:0.3}
+.empty-state .empty-title{font-size:16px;font-weight:600;color:var(--text)}
+.empty-state .empty-desc{font-size:13px;max-width:420px;line-height:1.6}
+.empty-state .empty-hint{font-size:12px;font-family:var(--mono);color:var(--text-faint)}
+
+/* Footer */
+.app-footer{background:var(--surface);border-top:1px solid var(--border);padding:0 20px;height:32px;display:flex;align-items:center;font-size:11px;color:var(--text-faint);flex-shrink:0}
+.app-footer a{color:var(--text-muted);text-decoration:none}
+.app-footer a:hover{color:var(--accent)}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-faint)}
+
+/* Links */
+.link-graph{stroke:var(--border);stroke-opacity:0.5;fill:none}
+.link-graph:hover{stroke-opacity:1}
+
+/* Graph nodes */
+.node-circle{cursor:pointer;stroke-width:2;transition:r 120ms ease}
+.node-label{font-size:10px;fill:var(--text-muted);pointer-events:none;font-family:'Inter',sans-serif;text-anchor:middle;dominant-baseline:central}
+.node-group:hover .node-circle{filter:brightness(1.3)}
+.node-group.selected .node-circle{stroke:#fff;stroke-width:3}
+.node-group.dimmed .node-circle{opacity:0.15}
+.node-group.dimmed .node-label{opacity:0.1}
+.link-graph.dimmed{stroke-opacity:0.05}
+.node-group.highlighted .node-circle{filter:brightness(1.4);stroke:#fff;stroke-width:2}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+  <a href="https://ioi-framework.github.io/" target="_blank" rel="noopener noreferrer" class="logo" aria-label="IoI Framework home">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="24" height="24" rx="5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="9" cy="9" r="2.5" fill="#58a6ff"/>
+      <circle cx="19" cy="9" r="2.5" fill="#f0883e"/>
+      <circle cx="14" cy="19" r="2.5" fill="#8b949e"/>
+      <line x1="9" y1="11.5" x2="14" y2="16.5" stroke="#58a6ff" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="19" y1="11.5" x2="14" y2="16.5" stroke="#f0883e" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="9" y1="9" x2="19" y2="9" stroke="#30363d" stroke-width="1" stroke-dasharray="2 2"/>
+    </svg>
+    <span class="logo-text">IoI Framework <span>— Graph Playground</span></span>
+  </a>
+  <div class="header-right">
+    <a href="https://ioi-framework.github.io/" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="font-size:12px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Docs
+    </a>
+  </div>
+</header>
+
+<!-- Drop Zone -->
+<div class="drop-zone" id="dropZone">
+  <div class="drop-target">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="drop-label" id="dropLabel">Drop .jsonld file or</span>
+    <button class="btn btn-primary" id="fileBtn" type="button">Choose File</button>
+    <input type="file" id="fileInput" accept=".jsonld,.json" style="display:none">
+    <span class="drop-label" style="margin-left:4px">or</span>
+    <input type="text" class="url-input" id="urlInput" placeholder="Paste raw .jsonld URL…">
+    <button class="btn btn-outline" id="urlBtn" type="button">Load URL</button>
+    <div class="file-info" id="fileInfo" style="display:none">
+      <span class="file-name" id="fileName"></span>
+      <div class="file-stats">
+        <span class="stat">Nodes: <span class="stat-val" id="statNodes">0</span></span>
+        <span class="stat">Triples: <span class="stat-val" id="statTriples">0</span></span>
+        <span class="stat">Types: <span class="stat-val" id="statTypes">0</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab Bar -->
+<nav class="tab-bar" role="tablist">
+  <button class="tab-btn active" role="tab" data-tab="graph" aria-selected="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;margin-right:4px"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="8.5" y1="6" x2="15.5" y2="6"/></svg>
+    Graph
+  </button>
+  <button class="tab-btn" role="tab" data-tab="table" aria-selected="false">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    Table
+  </button>
+  <button class="tab-btn" role="tab" data-tab="sparql" aria-selected="false">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;margin-right:4px"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    SPARQL
+  </button>
+</nav>
+
+<!-- Tab Content -->
+<div class="tab-content">
+  <!-- Graph Panel -->
+  <div class="tab-panel active graph-panel" id="panel-graph" role="tabpanel">
+    <div class="graph-container" id="graphContainer">
+      <div class="graph-controls">
+        <div class="graph-search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="graph-search" id="graphSearch" placeholder="Search nodes…">
+        </div>
+        <div class="graph-slider-wrap" id="sliderWrap">
+          <label>
+            Visible nodes:
+            <input type="range" id="nodeSlider" min="10" max="100" value="50">
+            <span class="graph-slider-val" id="sliderVal">50</span>
+          </label>
+        </div>
+      </div>
+      <div class="graph-legend" id="graphLegend" style="display:none">
+        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div> CASE/UCO</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div> IoI Extension</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8b949e"></div> Facet</div>
+      </div>
+      <div class="node-tooltip" id="nodeTooltip">
+        <div class="tt-type"></div>
+        <div class="tt-label"></div>
+      </div>
+      <div class="empty-state" id="graphEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="8.5" y1="6" x2="15.5" y2="6"/></svg>
+        <div class="empty-title">No graph data loaded</div>
+        <div class="empty-desc">Drop a CASE/UCO JSON-LD file above or load one from a URL to visualize the knowledge graph.</div>
+        <div class="empty-hint">Supports files from the IOI MCP Server</div>
+      </div>
+    </div>
+    <aside class="node-sidebar" id="nodeSidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <div class="sidebar-id" id="sidebarId"></div>
+          <div class="sidebar-type" id="sidebarType"></div>
+        </div>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="sidebar-body" id="sidebarBody"></div>
+    </aside>
+  </div>
+
+  <!-- Table Panel -->
+  <div class="tab-panel table-panel" id="panel-table" role="tabpanel">
+    <div class="table-toolbar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="table-search" id="tableSearch" placeholder="Filter rows…">
+      <span class="table-info" id="tableInfo"></span>
+    </div>
+    <div class="table-wrap" id="tableWrap">
+      <div class="empty-state" id="tableEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        <div class="empty-title">No data loaded</div>
+        <div class="empty-desc">Load a JSON-LD file to view all graph entries in a sortable table.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPARQL Panel -->
+  <div class="tab-panel sparql-panel" id="panel-sparql" role="tabpanel">
+    <div class="sparql-top">
+      <div class="sparql-editor-col">
+        <div class="sparql-toolbar">
+          <span class="toolbar-title">Query Editor</span>
+          <div class="sparql-examples">
+            <button class="example-btn" data-example="types">All Types</button>
+            <button class="example-btn" data-example="timestomping">Timestomping</button>
+            <button class="example-btn" data-example="count">Count by Type</button>
+          </div>
+        </div>
+        <textarea class="sparql-textarea" id="sparqlEditor" placeholder="SELECT ?s ?p ?o WHERE {&#10;  ?s ?p ?o .&#10;}" spellcheck="false"></textarea>
+        <div class="sparql-run-bar">
+          <button class="btn btn-primary" id="sparqlRun">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Query
+          </button>
+          <span class="run-status" id="runStatus"></span>
+        </div>
+      </div>
+      <div class="sparql-results-col">
+        <div class="results-toolbar">Results</div>
+        <div class="results-wrap" id="resultsWrap">
+          <div class="empty-state" id="sparqlEmpty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <div class="empty-title">Run a query</div>
+            <div class="empty-desc">Write a SPARQL-like query or pick an example. Queries match triples from the loaded graph.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="app-footer">
+  Powered by <a href="https://ioi-framework.github.io/" target="_blank" rel="noopener noreferrer" style="margin:0 4px">IOI MCP Server</a> · CASE/UCO Ontology
+</footer>
+
+<script>
+// ============================================================================
+// IoI Framework — Graph Playground
+// ============================================================================
+
+(function() {
+'use strict';
+
+// ---- State ----
+let rawData = null;        // Original JSON-LD
+let graphEntries = [];     // @graph array (flat, with facets promoted)
+let allNodes = [];         // { id, type, label, data, isFacet, category }
+let allLinks = [];         // { source, target }
+let tripleStore = [];      // { s, p, o } for SPARQL
+let tableRows = [];        // flat row data for table
+let tableColumns = [];     // column defs
+let sortCol = null;
+let sortDir = 'asc';
+let selectedNode = null;
+
+// ---- DOM refs ----
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+const dropZone = $('#dropZone');
+const fileInput = $('#fileInput');
+const fileBtn = $('#fileBtn');
+const urlInput = $('#urlInput');
+const urlBtn = $('#urlBtn');
+const dropLabel = $('#dropLabel');
+const fileInfo = $('#fileInfo');
+const fileNameEl = $('#fileName');
+const statNodes = $('#statNodes');
+const statTriples = $('#statTriples');
+const statTypes = $('#statTypes');
+
+const graphContainer = $('#graphContainer');
+const graphSearch = $('#graphSearch');
+const sliderWrap = $('#sliderWrap');
+const nodeSlider = $('#nodeSlider');
+const sliderVal = $('#sliderVal');
+const graphLegend = $('#graphLegend');
+const graphEmpty = $('#graphEmpty');
+const nodeTooltip = $('#nodeTooltip');
+
+const nodeSidebar = $('#nodeSidebar');
+const sidebarId = $('#sidebarId');
+const sidebarType = $('#sidebarType');
+const sidebarBody = $('#sidebarBody');
+const sidebarClose = $('#sidebarClose');
+
+const tableSearch = $('#tableSearch');
+const tableInfo = $('#tableInfo');
+const tableWrap = $('#tableWrap');
+const tableEmpty = $('#tableEmpty');
+
+const sparqlEditor = $('#sparqlEditor');
+const sparqlRun = $('#sparqlRun');
+const runStatus = $('#runStatus');
+const resultsWrap = $('#resultsWrap');
+const sparqlEmpty = $('#sparqlEmpty');
+
+// ---- Tabs ----
+$$('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected','true');
+    $(`#panel-${btn.dataset.tab}`).classList.add('active');
+    if (btn.dataset.tab === 'graph' && allNodes.length) requestAnimationFrame(() => resizeGraph());
+  });
+});
+
+// ---- File Loading ----
+fileBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+// Drag & drop
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+
+// URL loading
+urlBtn.addEventListener('click', loadFromUrl);
+urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrl(); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      processData(data, file.name);
+    } catch(err) {
+      alert('Failed to parse JSON-LD: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadFromUrl() {
+  const url = urlInput.value.trim();
+  if (!url) return;
+  dropLabel.textContent = 'Loading…';
+  fetch(url)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      const name = url.split('/').pop() || 'remote.jsonld';
+      processData(data, name);
+    })
+    .catch(err => {
+      alert('Failed to load URL: ' + err.message);
+      dropLabel.textContent = 'Drop .jsonld file or';
+    });
+}
+
+// ---- Data Processing ----
+function processData(data, filename) {
+  rawData = data;
+  const graph = data['@graph'] || (Array.isArray(data) ? data : [data]);
+  graphEntries = graph;
+
+  // Build nodes, links, triples
+  allNodes = [];
+  allLinks = [];
+  tripleStore = [];
+  const nodeMap = new Map();
+
+  function getShortId(id) {
+    if (!id) return '?';
+    const parts = id.split(/[/#:]/);
+    const last = parts[parts.length - 1];
+    return last.length > 30 ? last.substring(0, 27) + '…' : last;
+  }
+
+  function shortenPredicate(p) {
+    if (!p) return p;
+    // Strip common prefixes for display
+    return p.replace(/^https?:\/\/[^#]+[#/]/, '').replace(/^[^:]+:/, '');
+  }
+
+  function resolveValue(val) {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'object' && val['@value'] !== undefined) return val['@value'];
+    if (typeof val === 'object' && val['@id'] !== undefined) return val['@id'];
+    if (Array.isArray(val)) return val.map(resolveValue).join(', ');
+    return String(val);
+  }
+
+  function classifyType(typeStr) {
+    if (!typeStr) return 'uco';
+    if (typeof typeStr === 'string') {
+      if (typeStr.includes('ioi-ext') || typeStr.includes('ioi_ext')) return 'ioi';
+      if (typeStr.includes('Facet') || typeStr.includes('facet')) return 'facet';
+      return 'uco';
+    }
+    if (Array.isArray(typeStr)) {
+      if (typeStr.some(t => t.includes('Facet') || t.includes('facet'))) return 'facet';
+      if (typeStr.some(t => t.includes('ioi-ext') || t.includes('ioi_ext'))) return 'ioi';
+      return 'uco';
+    }
+    return 'uco';
+  }
+
+  function getNodeLabel(entry) {
+    // Priority 1: Look for fileName in facets
+    const facets = entry['uco-core:hasFacet'] || entry['hasFacet'] || [];
+    const facetArr = Array.isArray(facets) ? facets : [facets];
+    for (const f of facetArr) {
+      if (typeof f !== 'object') continue;
+      // Check for fileName first
+      for (const [k, v] of Object.entries(f)) {
+        if (k.toLowerCase().includes('filename') || k.toLowerCase().includes('name')) {
+          const val = resolveValue(v);
+          if (val && val.length < 60 && val.length > 0) return val;
+        }
+      }
+    }
+    // Priority 2: Any facet property that looks meaningful
+    for (const f of facetArr) {
+      if (typeof f !== 'object') continue;
+      for (const [k, v] of Object.entries(f)) {
+        if (k === '@id' || k === '@type') continue;
+        const val = resolveValue(v);
+        if (val && val.length > 1 && val.length < 60 && !/^\d+$/.test(val)) return val;
+      }
+    }
+    // Priority 3: first non-meta property
+    for (const [k, v] of Object.entries(entry)) {
+      if (k.startsWith('@') || k === 'uco-core:hasFacet' || k === 'hasFacet') continue;
+      const val = resolveValue(v);
+      if (val && val.length < 60) return val;
+    }
+    return getShortId(entry['@id']);
+  }
+
+  // Process each graph entry
+  graph.forEach(entry => {
+    const id = entry['@id'] || ('anon-' + Math.random().toString(36).substr(2, 8));
+    const type = entry['@type'];
+    const typeStr = Array.isArray(type) ? type.join(', ') : (type || '');
+    const category = classifyType(typeStr);
+    const label = getNodeLabel(entry);
+
+    const node = { id, type: typeStr, label, data: entry, isFacet: false, category };
+    allNodes.push(node);
+    nodeMap.set(id, node);
+
+    // Add triples for all properties
+    for (const [k, v] of Object.entries(entry)) {
+      if (k === 'uco-core:hasFacet' || k === 'hasFacet') continue;
+      tripleStore.push({ s: id, p: k, o: resolveValue(v) });
+    }
+
+    // Process facets
+    const facets = entry['uco-core:hasFacet'] || entry['hasFacet'] || [];
+    const facetArr = Array.isArray(facets) ? facets : [facets];
+    facetArr.forEach(facet => {
+      if (typeof facet !== 'object') return;
+      const fid = facet['@id'] || (id + '--facet-' + Math.random().toString(36).substr(2, 6));
+      const ftype = facet['@type'];
+      const ftypeStr = Array.isArray(ftype) ? ftype.join(', ') : (ftype || 'Facet');
+      const fcategory = classifyType(ftypeStr);
+      const flabel = getShortId(fid);
+
+      // Get first value as facet label
+      let facetLabel = flabel;
+      for (const [k, v] of Object.entries(facet)) {
+        if (k === '@id' || k === '@type') continue;
+        const val = resolveValue(v);
+        if (val && val.length < 50) { facetLabel = val; break; }
+      }
+
+      const fnode = { id: fid, type: ftypeStr, label: facetLabel, data: facet, isFacet: true, category: fcategory };
+      if (!nodeMap.has(fid)) {
+        allNodes.push(fnode);
+        nodeMap.set(fid, fnode);
+      }
+      allLinks.push({ source: id, target: fid });
+
+      // Add triples for facet props
+      for (const [k, v] of Object.entries(facet)) {
+        tripleStore.push({ s: fid, p: k, o: resolveValue(v) });
+      }
+      // hasFacet triple
+      tripleStore.push({ s: id, p: 'uco-core:hasFacet', o: fid });
+    });
+  });
+
+  // Build table rows (flatten)
+  buildTableData(graph);
+
+  // Stats
+  const typeSet = new Set();
+  allNodes.forEach(n => {
+    if (n.type) {
+      (Array.isArray(n.data['@type']) ? n.data['@type'] : [n.data['@type']]).forEach(t => { if (t) typeSet.add(t); });
+    }
+  });
+
+  fileNameEl.textContent = filename;
+  statNodes.textContent = allNodes.length;
+  statTriples.textContent = tripleStore.length;
+  statTypes.textContent = typeSet.size;
+  fileInfo.style.display = 'flex';
+  dropLabel.textContent = 'Loaded:';
+
+  // Render everything
+  renderGraph();
+  renderTable();
+  graphLegend.style.display = 'flex';
+  graphEmpty.style.display = 'none';
+  tableEmpty.style.display = 'none';
+}
+
+// ---- GRAPH VISUALIZATION ----
+let simulation = null;
+let svgEl = null;
+let gRoot = null;
+let zoom = null;
+
+function renderGraph() {
+  // Clear old
+  graphContainer.querySelectorAll('svg.graph-svg').forEach(el => el.remove());
+
+  const isLarge = allNodes.length > 100;
+  if (isLarge) {
+    sliderWrap.classList.add('visible');
+    nodeSlider.max = allNodes.length;
+    nodeSlider.value = Math.min(50, allNodes.length);
+    sliderVal.textContent = nodeSlider.value;
+  } else {
+    sliderWrap.classList.remove('visible');
+  }
+
+  const visibleCount = isLarge ? parseInt(nodeSlider.value) : allNodes.length;
+  buildGraph(visibleCount);
+}
+
+function buildGraph(count) {
+  // Clear old SVG
+  graphContainer.querySelectorAll('svg.graph-svg').forEach(el => el.remove());
+  if (simulation) simulation.stop();
+
+  const nodes = allNodes.slice(0, count);
+  const nodeIds = new Set(nodes.map(n => n.id));
+  const links = allLinks.filter(l => nodeIds.has(l.source?.id || l.source) && nodeIds.has(l.target?.id || l.target))
+    .map(l => ({ source: l.source?.id || l.source, target: l.target?.id || l.target }));
+
+  const rect = graphContainer.getBoundingClientRect();
+  const width = rect.width || 800;
+  const height = rect.height || 600;
+
+  svgEl = d3.select(graphContainer).append('svg')
+    .attr('class', 'graph-svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  gRoot = svgEl.append('g');
+
+  // Zoom
+  zoom = d3.zoom()
+    .scaleExtent([0.1, 8])
+    .on('zoom', e => gRoot.attr('transform', e.transform));
+  svgEl.call(zoom);
+
+  // Simulation
+  simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(60).strength(0.3))
+    .force('charge', d3.forceManyBody().strength(-120).distanceMax(300))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(20))
+    .force('x', d3.forceX(width / 2).strength(0.05))
+    .force('y', d3.forceY(height / 2).strength(0.05));
+
+  // Links
+  const linkSel = gRoot.append('g').selectAll('line')
+    .data(links).enter().append('line')
+    .attr('class', 'link-graph')
+    .attr('stroke-width', 1);
+
+  // Nodes
+  const nodeColor = d => {
+    if (d.category === 'ioi') return '#f0883e';
+    if (d.category === 'facet') return '#8b949e';
+    return '#58a6ff';
+  };
+
+  const nodeGroup = gRoot.append('g').selectAll('g')
+    .data(nodes).enter().append('g')
+    .attr('class', 'node-group')
+    .call(d3.drag()
+      .on('start', dragStarted)
+      .on('drag', dragged)
+      .on('end', dragEnded));
+
+  nodeGroup.append('circle')
+    .attr('class', 'node-circle')
+    .attr('r', d => d.isFacet ? 5 : 8)
+    .attr('fill', nodeColor)
+    .attr('stroke', d => d3.color(nodeColor(d)).darker(0.5));
+
+  nodeGroup.append('text')
+    .attr('class', 'node-label')
+    .attr('dy', d => d.isFacet ? -10 : -14)
+    .text(d => d.label.length > 20 ? d.label.substring(0, 18) + '…' : d.label);
+
+  // Tooltip
+  nodeGroup.on('mouseover', function(event, d) {
+    const tt = nodeTooltip;
+    tt.querySelector('.tt-type').textContent = d.type;
+    tt.querySelector('.tt-label').textContent = d.label;
+    tt.style.display = 'block';
+    const r = graphContainer.getBoundingClientRect();
+    tt.style.left = (event.clientX - r.left + 12) + 'px';
+    tt.style.top = (event.clientY - r.top - 10) + 'px';
+  })
+  .on('mousemove', function(event) {
+    const r = graphContainer.getBoundingClientRect();
+    nodeTooltip.style.left = (event.clientX - r.left + 12) + 'px';
+    nodeTooltip.style.top = (event.clientY - r.top - 10) + 'px';
+  })
+  .on('mouseout', () => { nodeTooltip.style.display = 'none'; });
+
+  // Click to show sidebar
+  nodeGroup.on('click', function(event, d) {
+    event.stopPropagation();
+    selectNode(d, nodeGroup, linkSel);
+  });
+
+  svgEl.on('click', () => {
+    deselectNode(nodeGroup, linkSel);
+  });
+
+  simulation.on('tick', () => {
+    linkSel
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+    nodeGroup.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  // Search
+  graphSearch.oninput = () => {
+    const q = graphSearch.value.toLowerCase().trim();
+    if (!q) {
+      nodeGroup.classed('dimmed', false).classed('highlighted', false);
+      linkSel.classed('dimmed', false);
+      return;
+    }
+    const matched = new Set();
+    nodes.forEach(n => {
+      const searchText = (n.label + ' ' + n.id + ' ' + n.type + ' ' + JSON.stringify(n.data)).toLowerCase();
+      if (searchText.includes(q)) matched.add(n.id);
+    });
+    nodeGroup.classed('dimmed', d => !matched.has(d.id)).classed('highlighted', d => matched.has(d.id));
+    linkSel.classed('dimmed', d => !matched.has(d.source.id) && !matched.has(d.target.id));
+  };
+
+  function dragStarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x; d.fy = d.y;
+  }
+  function dragged(event, d) {
+    d.fx = event.x; d.fy = event.y;
+  }
+  function dragEnded(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null; d.fy = null;
+  }
+}
+
+nodeSlider.addEventListener('input', () => {
+  sliderVal.textContent = nodeSlider.value;
+  buildGraph(parseInt(nodeSlider.value));
+});
+
+function resizeGraph() {
+  if (!svgEl) return;
+  const rect = graphContainer.getBoundingClientRect();
+  svgEl.attr('width', rect.width).attr('height', rect.height);
+}
+window.addEventListener('resize', () => { if (allNodes.length) resizeGraph(); });
+
+function selectNode(d, nodeGroup, linkSel) {
+  selectedNode = d;
+  nodeGroup.classed('selected', n => n.id === d.id);
+
+  // Show sidebar
+  nodeSidebar.classList.add('open');
+  sidebarId.textContent = d.id;
+
+  const typeClass = d.category === 'ioi' ? 'type-ioi' : d.category === 'facet' ? 'type-facet' : 'type-uco';
+  sidebarType.className = 'sidebar-type ' + typeClass;
+  sidebarType.textContent = d.type;
+
+  // Build properties
+  let html = '';
+  const data = d.data;
+
+  // Direct properties
+  const directProps = Object.entries(data).filter(([k]) => k !== '@id' && k !== '@type' && k !== 'uco-core:hasFacet' && k !== 'hasFacet');
+  if (directProps.length) {
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">Properties</div><div class="prop-list">';
+    directProps.forEach(([k, v]) => {
+      html += renderProp(k, v);
+    });
+    html += '</div></div>';
+  }
+
+  // Facets
+  const facets = data['uco-core:hasFacet'] || data['hasFacet'];
+  if (facets) {
+    const farr = Array.isArray(facets) ? facets : [facets];
+    farr.forEach((facet, i) => {
+      if (typeof facet !== 'object') return;
+      const ft = Array.isArray(facet['@type']) ? facet['@type'].join(', ') : (facet['@type'] || 'Facet');
+      html += `<div class="sidebar-section"><div class="sidebar-section-title">Facet: ${escapeHtml(shortenType(ft))}</div><div class="prop-list">`;
+      Object.entries(facet).forEach(([k, v]) => {
+        if (k === '@type') return;
+        html += renderProp(k, v);
+      });
+      html += '</div></div>';
+    });
+  }
+
+  sidebarBody.innerHTML = html;
+}
+
+function shortenType(t) {
+  return t.replace(/https?:\/\/[^#]+[#/]/g, '').replace(/^[^:]+:/g, '');
+}
+
+function renderProp(key, val) {
+  const shortKey = shortenType(key);
+  const resolved = resolveValueDisplay(val);
+  return `<div class="prop-row"><span class="prop-key">${escapeHtml(shortKey)}</span><span class="prop-val ${resolved.cls}">${escapeHtml(resolved.text)}</span></div>`;
+}
+
+function resolveValueDisplay(val) {
+  if (val === null || val === undefined) return { text: '—', cls: '' };
+  if (typeof val === 'boolean') return { text: val ? '✓ true' : '✗ false', cls: val ? 'bool-true' : 'bool-false' };
+  if (typeof val === 'number') return { text: String(val), cls: 'number' };
+  if (typeof val === 'object' && val['@value'] !== undefined) {
+    const v = val['@value'];
+    const t = val['@type'] || '';
+    if (t.includes('dateTime') || t.includes('date')) {
+      return { text: formatDate(v), cls: 'date' };
+    }
+    if (t.includes('integer') || t.includes('int') || t.includes('decimal') || t.includes('float') || t.includes('double')) {
+      return { text: String(v), cls: 'number' };
+    }
+    if (t.includes('boolean')) {
+      const bv = v === 'true' || v === true;
+      return { text: bv ? '✓ true' : '✗ false', cls: bv ? 'bool-true' : 'bool-false' };
+    }
+    return { text: String(v), cls: '' };
+  }
+  if (typeof val === 'object' && val['@id'] !== undefined) return { text: val['@id'], cls: '' };
+  if (Array.isArray(val)) {
+    const items = val.map(v => resolveValueDisplay(v).text);
+    return { text: items.join(', '), cls: '' };
+  }
+  if (typeof val === 'object') return { text: JSON.stringify(val), cls: '' };
+  // Check if string looks like a date
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(val)) return { text: formatDate(val), cls: 'date' };
+  return { text: String(val), cls: '' };
+}
+
+function formatDate(v) {
+  try {
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return String(v);
+    return d.toISOString().replace('T', ' ').replace(/\.000Z$/, ' UTC').replace(/Z$/, ' UTC');
+  } catch { return String(v); }
+}
+
+function deselectNode(nodeGroup, linkSel) {
+  selectedNode = null;
+  if (nodeGroup) nodeGroup.classed('selected', false);
+  nodeSidebar.classList.remove('open');
+}
+
+sidebarClose.addEventListener('click', () => deselectNode());
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// ---- TABLE ----
+function buildTableData(graph) {
+  tableRows = [];
+  const colSet = new Set(['@id', '@type']);
+
+  graph.forEach(entry => {
+    const row = { '@id': entry['@id'] || '', '@type': '' };
+    const type = entry['@type'];
+    row['@type'] = Array.isArray(type) ? type.join(', ') : (type || '');
+
+    // Flatten direct properties
+    for (const [k, v] of Object.entries(entry)) {
+      if (k === '@id' || k === '@type' || k === 'uco-core:hasFacet' || k === 'hasFacet') continue;
+      colSet.add(k);
+      row[k] = resolveValueFlat(v);
+    }
+
+    // Flatten facets
+    const facets = entry['uco-core:hasFacet'] || entry['hasFacet'] || [];
+    const farr = Array.isArray(facets) ? facets : [facets];
+    farr.forEach(facet => {
+      if (typeof facet !== 'object') return;
+      for (const [k, v] of Object.entries(facet)) {
+        if (k === '@id' || k === '@type') continue;
+        colSet.add(k);
+        row[k] = resolveValueFlat(v);
+      }
+    });
+
+    tableRows.push(row);
+  });
+
+  tableColumns = Array.from(colSet);
+  sortCol = null;
+  sortDir = 'asc';
+}
+
+function resolveValueFlat(val) {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object' && val['@value'] !== undefined) return val['@value'];
+  if (typeof val === 'object' && val['@id'] !== undefined) return val['@id'];
+  if (Array.isArray(val)) return val.map(resolveValueFlat).join(', ');
+  if (typeof val === 'object') return JSON.stringify(val);
+  return String(val);
+}
+
+function renderTable() {
+  // Clear old table
+  const oldTable = tableWrap.querySelector('table');
+  if (oldTable) oldTable.remove();
+
+  if (!tableRows.length) return;
+
+  const filter = tableSearch.value.toLowerCase().trim();
+  let rows = tableRows;
+  if (filter) {
+    rows = rows.filter(r => {
+      return tableColumns.some(c => String(r[c] || '').toLowerCase().includes(filter));
+    });
+  }
+
+  // Sort
+  if (sortCol !== null) {
+    rows = [...rows].sort((a, b) => {
+      const av = String(a[sortCol] || '');
+      const bv = String(b[sortCol] || '');
+      const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  tableInfo.textContent = `${rows.length} / ${tableRows.length} rows · ${tableColumns.length} cols`;
+
+  const table = document.createElement('table');
+  table.className = 'data-table';
+
+  // Header
+  const thead = document.createElement('thead');
+  const hrow = document.createElement('tr');
+  tableColumns.forEach(col => {
+    const th = document.createElement('th');
+    const shortName = shortenType(col);
+    th.textContent = shortName;
+    const arrow = document.createElement('span');
+    arrow.className = 'sort-arrow';
+    arrow.textContent = sortCol === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕';
+    if (sortCol === col) th.classList.add('sorted');
+    th.appendChild(arrow);
+    th.addEventListener('click', () => {
+      if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { sortCol = col; sortDir = 'asc'; }
+      renderTable();
+    });
+    hrow.appendChild(th);
+  });
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  // Body — virtual scrolling for large datasets
+  const tbody = document.createElement('tbody');
+  const maxRender = 500; // Render up to 500 rows at a time
+  const renderCount = Math.min(rows.length, maxRender);
+
+  for (let i = 0; i < renderCount; i++) {
+    tbody.appendChild(createTableRow(rows[i]));
+  }
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+
+  // Lazy load remaining rows on scroll
+  if (rows.length > maxRender) {
+    let loaded = maxRender;
+    const loadMore = () => {
+      if (loaded >= rows.length) { tableWrap.removeEventListener('scroll', onScroll); return; }
+      const frag = document.createDocumentFragment();
+      const end = Math.min(loaded + 200, rows.length);
+      for (let i = loaded; i < end; i++) {
+        frag.appendChild(createTableRow(rows[i]));
+      }
+      tbody.appendChild(frag);
+      loaded = end;
+      tableInfo.textContent = `${rows.length} rows (${loaded} rendered) · ${tableColumns.length} cols`;
+    };
+    const onScroll = () => {
+      if (tableWrap.scrollTop + tableWrap.clientHeight >= tableWrap.scrollHeight - 200) loadMore();
+    };
+    tableWrap.addEventListener('scroll', onScroll);
+  }
+}
+
+function createTableRow(row) {
+  const tr = document.createElement('tr');
+  tableColumns.forEach(col => {
+    const td = document.createElement('td');
+    const val = row[col] || '';
+    td.textContent = val;
+    td.title = val;
+    // Classify
+    if (col === '@type') td.className = 'cell-type';
+    else if (/^\d{4}-\d{2}-\d{2}T/.test(val)) { td.textContent = formatDate(val); td.className = 'cell-date'; }
+    else if (/^-?\d+(\.\d+)?$/.test(val) && val !== '') td.className = 'cell-number';
+    else if (val === 'true') { td.textContent = '✓'; td.className = 'cell-bool cell-bool-true'; }
+    else if (val === 'false') { td.textContent = '✗'; td.className = 'cell-bool cell-bool-false'; }
+    tr.appendChild(td);
+  });
+  return tr;
+}
+
+let tableSearchTimeout;
+tableSearch.addEventListener('input', () => {
+  clearTimeout(tableSearchTimeout);
+  tableSearchTimeout = setTimeout(renderTable, 200);
+});
+
+// ---- SPARQL-LIKE QUERY ENGINE ----
+const exampleQueries = {
+  types: `SELECT DISTINCT ?type WHERE {\n  ?s @type ?type .\n}`,
+  timestomping: `SELECT ?s ?created0x10 ?created0x30 WHERE {\n  ?s ioi-ext:created0x10 ?created0x10 .\n  ?s ioi-ext:created0x30 ?created0x30 .\n  FILTER(?created0x10 != ?created0x30)\n}`,
+  count: `SELECT ?type (COUNT(?s) AS ?count) WHERE {\n  ?s @type ?type .\n}\nGROUP BY ?type`
+};
+
+$$('.example-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sparqlEditor.value = exampleQueries[btn.dataset.example];
+  });
+});
+
+sparqlRun.addEventListener('click', runQuery);
+sparqlEditor.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runQuery();
+  // Tab support
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = sparqlEditor.selectionStart;
+    sparqlEditor.value = sparqlEditor.value.substring(0, start) + '  ' + sparqlEditor.value.substring(sparqlEditor.selectionEnd);
+    sparqlEditor.selectionStart = sparqlEditor.selectionEnd = start + 2;
+  }
+});
+
+function runQuery() {
+  const query = sparqlEditor.value.trim();
+  if (!query) return;
+  if (!tripleStore.length) {
+    runStatus.textContent = 'No data loaded';
+    runStatus.className = 'run-status error';
+    return;
+  }
+
+  try {
+    const result = executeSparql(query);
+    displayResults(result);
+    runStatus.textContent = `${result.rows.length} result${result.rows.length !== 1 ? 's' : ''} in ${result.time}ms`;
+    runStatus.className = 'run-status success';
+  } catch(err) {
+    runStatus.textContent = 'Error: ' + err.message;
+    runStatus.className = 'run-status error';
+  }
+}
+
+function executeSparql(query) {
+  const t0 = performance.now();
+
+  // Parse query
+  const selectMatch = query.match(/SELECT\s+(DISTINCT\s+)?(.+?)\s+WHERE/is);
+  if (!selectMatch) throw new Error('Query must have SELECT ... WHERE { } form');
+
+  const distinct = !!selectMatch[1];
+  const selectVars = selectMatch[2];
+
+  const whereMatch = query.match(/WHERE\s*\{([^}]+)\}/is);
+  if (!whereMatch) throw new Error('Missing WHERE { } block');
+
+  const whereBody = whereMatch[1].trim();
+
+  // Check for GROUP BY
+  const groupMatch = query.match(/GROUP\s+BY\s+(\?\w+)/i);
+  const groupBy = groupMatch ? groupMatch[1] : null;
+
+  // Parse aggregates from SELECT
+  const aggregates = [];
+  const varList = [];
+  // First extract aggregate expressions like (COUNT(?s) AS ?count)
+  let remainSelect = selectVars;
+  const aggRe = /\((\w+)\((\?\w+)\)\s+AS\s+(\?\w+)\)/gi;
+  let am;
+  while ((am = aggRe.exec(selectVars)) !== null) {
+    aggregates.push({ fn: am[1].toUpperCase(), input: am[2], output: am[3] });
+    varList.push(am[3]);
+    remainSelect = remainSelect.replace(am[0], '');
+  }
+  // Then extract remaining variables
+  const varRe = /\?\w+/g;
+  let vm;
+  while ((vm = varRe.exec(remainSelect)) !== null) {
+    if (!varList.includes(vm[0])) varList.push(vm[0]);
+  }
+
+  // Parse WHERE patterns
+  const patterns = [];
+  const filterConditions = [];
+
+  // Split by . but not inside FILTER()
+  let bodyRemain = whereBody;
+  const filterMatch = bodyRemain.match(/FILTER\s*\(([^)]+)\)/i);
+  if (filterMatch) {
+    filterConditions.push(filterMatch[1].trim());
+    bodyRemain = bodyRemain.replace(filterMatch[0], '');
+  }
+
+  const patternLines = bodyRemain.split('.').map(s => s.trim()).filter(Boolean);
+  patternLines.forEach(line => {
+    const parts = line.split(/\s+/).filter(Boolean);
+    if (parts.length >= 3) {
+      patterns.push({ s: parts[0], p: parts[1], o: parts.slice(2).join(' ') });
+    }
+  });
+
+  // Match patterns against triple store
+  let bindings = [{}];
+
+  patterns.forEach(pattern => {
+    const newBindings = [];
+    bindings.forEach(binding => {
+      tripleStore.forEach(triple => {
+        const match = matchTriple(pattern, triple, binding);
+        if (match) newBindings.push(match);
+      });
+    });
+    bindings = newBindings;
+  });
+
+  // Apply FILTER
+  filterConditions.forEach(cond => {
+    bindings = bindings.filter(b => evaluateFilter(cond, b));
+  });
+
+  // GROUP BY + aggregates
+  if (groupBy) {
+    const groups = new Map();
+    bindings.forEach(b => {
+      const key = b[groupBy] || '';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(b);
+    });
+
+    const aggRows = [];
+    groups.forEach((group, key) => {
+      const row = { [groupBy]: key };
+      aggregates.forEach(agg => {
+        if (agg.fn === 'COUNT') row[agg.output] = String(group.length);
+        else if (agg.fn === 'SUM') row[agg.output] = String(group.reduce((s, b) => s + (parseFloat(b[agg.input]) || 0), 0));
+      });
+      aggRows.push(row);
+    });
+
+    // Sort by count descending if count exists
+    const countVar = aggregates.find(a => a.fn === 'COUNT');
+    if (countVar) aggRows.sort((a, b) => parseInt(b[countVar.output]) - parseInt(a[countVar.output]));
+
+    return { columns: varList, rows: aggRows, time: Math.round(performance.now() - t0) };
+  }
+
+  // DISTINCT
+  if (distinct) {
+    const seen = new Set();
+    bindings = bindings.filter(b => {
+      const key = varList.map(v => b[v] || '').join('|||');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  // Project
+  const rows = bindings.map(b => {
+    const row = {};
+    varList.forEach(v => row[v] = b[v] || '');
+    return row;
+  });
+
+  return { columns: varList, rows, time: Math.round(performance.now() - t0) };
+}
+
+function matchTriple(pattern, triple, binding) {
+  const newBinding = { ...binding };
+
+  function matchPart(patternPart, triplePart) {
+    if (patternPart.startsWith('?')) {
+      // Variable
+      if (newBinding[patternPart] !== undefined) {
+        return newBinding[patternPart] === triplePart;
+      }
+      newBinding[patternPart] = triplePart;
+      return true;
+    }
+    // Literal — match against predicate, allowing partial match
+    return triplePart === patternPart || triplePart.endsWith(patternPart) || triplePart.includes(patternPart);
+  }
+
+  if (!matchPart(pattern.s, triple.s)) return null;
+  if (!matchPart(pattern.p, triple.p)) return null;
+  if (!matchPart(pattern.o, triple.o)) return null;
+
+  return newBinding;
+}
+
+function evaluateFilter(cond, binding) {
+  // Support: ?var != ?var2, ?var != "literal", ?var = "literal"
+  const neqMatch = cond.match(/(\?\w+)\s*!=\s*(\?\w+|"[^"]*"|'[^']*'|\S+)/);
+  if (neqMatch) {
+    const left = neqMatch[1].startsWith('?') ? binding[neqMatch[1]] : neqMatch[1];
+    let right = neqMatch[2];
+    if (right.startsWith('?')) right = binding[right];
+    else right = right.replace(/^["']|["']$/g, '');
+    return left !== right;
+  }
+  const eqMatch = cond.match(/(\?\w+)\s*=\s*(\?\w+|"[^"]*"|'[^']*'|\S+)/);
+  if (eqMatch) {
+    const left = eqMatch[1].startsWith('?') ? binding[eqMatch[1]] : eqMatch[1];
+    let right = eqMatch[2];
+    if (right.startsWith('?')) right = binding[right];
+    else right = right.replace(/^["']|["']$/g, '');
+    return left === right;
+  }
+  // CONTAINS
+  const containsMatch = cond.match(/CONTAINS\s*\(\s*(\?\w+)\s*,\s*["']([^"']+)["']\s*\)/i);
+  if (containsMatch) {
+    const val = binding[containsMatch[1]] || '';
+    return val.includes(containsMatch[2]);
+  }
+  return true; // Unknown filter, pass through
+}
+
+function displayResults(result) {
+  sparqlEmpty.style.display = 'none';
+  const old = resultsWrap.querySelector('table');
+  if (old) old.remove();
+
+  if (!result.rows.length) {
+    sparqlEmpty.style.display = 'flex';
+    sparqlEmpty.querySelector('.empty-title').textContent = 'No results';
+    sparqlEmpty.querySelector('.empty-desc').textContent = 'The query returned no matching triples.';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'results-table';
+
+  const thead = document.createElement('thead');
+  const hrow = document.createElement('tr');
+  result.columns.forEach(col => {
+    const th = document.createElement('th');
+    th.textContent = col;
+    hrow.appendChild(th);
+  });
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  result.rows.forEach(row => {
+    const tr = document.createElement('tr');
+    result.columns.forEach(col => {
+      const td = document.createElement('td');
+      td.textContent = row[col] || '';
+      td.title = row[col] || '';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  resultsWrap.appendChild(table);
+}
+
+// ---- Utilities ----
+function resolveValue(val) {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object' && val['@value'] !== undefined) return String(val['@value']);
+  if (typeof val === 'object' && val['@id'] !== undefined) return val['@id'];
+  if (Array.isArray(val)) return val.map(resolveValue).join(', ');
+  if (typeof val === 'object') return JSON.stringify(val);
+  return String(val);
+}
+
+})();
+</script>
+</body>
+</html>
