@@ -1,3 +1,13 @@
+# rule_id:   IOI-007
+# version:   1.0
+# status:    Validated
+# category:  temporal
+# title:     USN Journal Cleared Before Security Event
+# invariant: Security event log entries exist AND USN journal shows clearing before those events
+# artifacts: Security.evtx, $UsnJrnl
+# added:     2025-10-01
+# changed:   (none)
+#
 PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
