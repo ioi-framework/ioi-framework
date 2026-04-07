@@ -1,23 +1,35 @@
 {
-  "@id": "kb:usn-entry--86aaea68-8d53-4284-be9d-7221d59b34bd",
-  "@type": "observable:File",
-  "core:hasFacet": [
+  "@context": {
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
     {
-      "@id": "kb:usn-entry-file-facet--86aaea68-8d53-4284-be9d-7221d59b34bd",
-      "@type": "observable:FileFacet",
-      "observable:fileName": "{6d6719cb-4254-413b-b71b-6b82d5dbbe36}1033.bin"
-    },
-    {
-      "@id": "kb:usn-entry-custom-facet--86aaea68-8d53-4284-be9d-7221d59b34bd",
-      "@type": [
-        "ioi-ext:UsnFacet",
-        "core:Facet"
-      ],
-      "ioi-ext:updateReasons": "FileDelete|Close",
-      "ioi-ext:updateTimestamp": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-07-14T22:18:37.5953019+00:00"
-      }
+      "@id": "kb:usn-entry--86aaea68-8d53-4284-be9d-7221d59b34bd",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:usn-entry-file-facet--86aaea68-8d53-4284-be9d-7221d59b34bd",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "{6d6719cb-4254-413b-b71b-6b82d5dbbe36}1033.bin"
+        },
+        {
+          "@id": "kb:usn-entry-custom-facet--86aaea68-8d53-4284-be9d-7221d59b34bd",
+          "@type": [
+            "ioi-ext:UsnFacet",
+            "core:Facet"
+          ],
+          "ioi-ext:updateReasons": "FileDelete|Close",
+          "ioi-ext:updateTimestamp": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-07-14T22:18:37.5953019+00:00"
+          }
+        }
+      ]
     }
   ]
 }
