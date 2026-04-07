@@ -1,3 +1,13 @@
+# rule_id:   IOI-012
+# version:   1.0
+# status:    Validated
+# category:  temporal
+# title:     Office XML Metadata Timestamp Inconsistent with MFT
+# invariant: Office core.xml creation time does not match MFT created0x10 for the same file
+# artifacts: Office core.xml, $MFT
+# added:     2025-10-01
+# changed:   (none)
+#
 PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
