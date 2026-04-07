@@ -1,21 +1,33 @@
 {
-  "@id": "kb:mft-entry--60501edc-79a7-4823-b37f-5c5b1928899b",
-  "@type": "observable:File",
-  "core:hasFacet": [
+  "@context": {
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
     {
-      "@id": "kb:mft-entry-file-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
-      "@type": "observable:FileFacet",
-      "observable:fileName": "tracking.log",
-      "observable:filePath": ".\\System Volume Informationtracking.log"
-    },
-    {
-      "@id": "kb:mft-entry-custom-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
-      "@type": [
-        "ioi-ext:MftFacet",
-        "core:Facet"
-      ],
-      "ioi-ext:parentPath": ".\\System Volume Information",
-      "ioi-ext:fileName": "tracking.log"
+      "@id": "kb:mft-entry--60501edc-79a7-4823-b37f-5c5b1928899b",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:mft-entry-file-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "tracking.log",
+          "observable:filePath": ".\\System Volume Informationtracking.log"
+        },
+        {
+          "@id": "kb:mft-entry-custom-facet--60501edc-79a7-4823-b37f-5c5b1928899b",
+          "@type": [
+            "ioi-ext:MftFacet",
+            "core:Facet"
+          ],
+          "ioi-ext:parentPath": ".\\System Volume Information",
+          "ioi-ext:fileName": "tracking.log"
+        }
+      ]
     }
   ]
 }
