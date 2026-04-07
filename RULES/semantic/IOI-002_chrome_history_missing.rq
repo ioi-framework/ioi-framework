@@ -12,7 +12,7 @@ WHERE {
       {
         SELECT DISTINCT ?domain ?mft_file
         WHERE {
-          GRAPH <http://example.org/mft_case2> {
+          GRAPH <https://ioi-framework.github.io/cases/AF-002/graphs/mft> {
             { ?facet ioi-ext:parentPath ?path . FILTER(CONTAINS(?path, "IndexedDB")) }
             UNION
             { ?facet observable:filePath ?path . FILTER(CONTAINS(?path, "IndexedDB")) }
@@ -26,7 +26,7 @@ WHERE {
         {
           SELECT DISTINCT ?histDomain
           WHERE {
-            GRAPH <http://example.org/history_case2> {
+            GRAPH <https://ioi-framework.github.io/cases/AF-002/graphs/history> {
               ?url_facet observable:fullValue ?url_value .
               BIND(STRAFTER(STR(?url_value), "://") AS ?after_scheme)
               BIND(IF(STRSTARTS(?after_scheme, "www."), STRAFTER(?after_scheme, "www."), ?after_scheme) AS ?host_and_path)
@@ -45,7 +45,7 @@ WHERE {
     SELECT (COUNT(DISTINCT ?usn_file) AS ?usn_events)
            (GROUP_CONCAT(DISTINCT ?update_reasons; separator=" ; ") AS ?usn_evidence)
     WHERE {
-      GRAPH <http://example.org/usn_case2> {
+      GRAPH <https://ioi-framework.github.io/cases/AF-002/graphs/usn> {
         ?usn_file a observable:File ;
                   core:hasFacet ?usn_file_facet, ?usn_facet .
         ?usn_file_facet a observable:FileFacet ;
