@@ -498,13 +498,45 @@ clearAllBtn.addEventListener('click', () => {
 });
 
 function guessGraphIri(filename) {
+  // Scalable: parse case ID from filename, then detect artifact type.
+  // Filename patterns supported:
+  //   af004_mft.jsonld        → AF-004 / mft
+  //   mft_test.jsonld         → AF-NEW  / mft
+  //   prefetch_full_graph.jsonld → AF-NEW / prefetch
   const stem = filename.replace(/\.(jsonld|json)$/i, '').toLowerCase();
-  if (stem.includes('mft')) return 'https://ioi-framework.github.io/cases/AF-004/graphs/mft';
-  if (stem.includes('usn')) return 'https://ioi-framework.github.io/cases/AF-004/graphs/usn';
-  if (stem.includes('evtx') || stem.includes('security')) return 'http://example.org/evtx_case';
-  if (stem.includes('lnk')) return 'http://example.org/lnk_case';
-  if (stem.includes('office') || stem.includes('docx')) return 'http://example.org/office_case';
-  return `https://ioi-framework.github.io/cases/AF-NEW/graphs/${stem.replace(/[^a-z0-9_]/g, '_')}`;
+
+  // Extract case ID: af004 / af-004 / af_004 / case004 → AF-004
+  const caseMatch = stem.match(/(?:^|[_-])af[-_]?(\d+)(?:[_-]|$)/i)
+                 || stem.match(/(?:^|[_-])case[-_]?(\d+)(?:[_-]|$)/i);
+  const caseId = caseMatch
+    ? 'AF-' + String(parseInt(caseMatch[1], 10)).padStart(3, '0')
+    : 'AF-NEW';
+
+  // Detect artifact type from known keywords
+  const artifactMap = [
+    ['mft',        'mft'],
+    ['usn',        'usn'],
+    ['evtx',       'evtx'],
+    ['security',   'security'],
+    ['system',     'system'],
+    ['lnk',        'lnk'],
+    ['office',     'office'],
+    ['docx',       'office'],
+    ['xlsx',       'office'],
+    ['history',    'history'],
+    ['chrome',     'history'],
+    ['prefetch',   'prefetch'],
+    ['amcache',    'amcache'],
+    ['shimcache',  'shimcache'],
+    ['srum',       'srum'],
+    ['registry',   'registry'],
+    ['jumplist',   'jumplist'],
+    ['shellbag',   'shellbag'],
+  ];
+  const matched = artifactMap.find(([k]) => stem.includes(k));
+  const artifact = matched ? matched[1] : stem.replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+
+  return `https://ioi-framework.github.io/cases/${caseId}/graphs/${artifact}`;
 }
 
 function loadFile(file) {
@@ -1277,7 +1309,25 @@ SELECT DISTINCT ?deleted_guid ?usn_evidence WHERE {
   ?s a ?type .
 }
 GROUP BY ?type
-ORDER BY DESC(?count)`
+ORDER BY DESC(?count)`,
+  explore: `PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
+PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
+
+# Explore any loaded graph — see all files + properties
+# Works with any MCP-generated JSON-LD
+SELECT ?fileName ?parentPath ?artifactProp ?value WHERE {
+  GRAPH ?g {
+    ?entry a observable:File ;
+           core:hasFacet ?facet .
+    OPTIONAL { ?facet observable:fileName ?fileName }
+    OPTIONAL { ?facet ioi-ext:parentPath ?parentPath }
+    OPTIONAL { ?facet ?artifactProp ?value .
+               FILTER(STRSTARTS(STR(?artifactProp), "https://ioi-framework.github.io/ns/ioi-ext/")) }
+  }
+}
+ORDER BY ?fileName
+LIMIT 50`
 };
 
 $$('.example-btn').forEach(btn => {
