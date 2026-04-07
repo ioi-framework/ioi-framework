@@ -193,7 +193,7 @@ def fill_template_from_json(json_file_path, output_file_path):
             "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
             "vocabulary": "https://ontology.unifiedcyberontology.org/uco/vocabulary/",
             "xsd": "http://www.w3.org/2001/XMLSchema#",
-            "kb": "http://example.org/kb/"
+            "kb": "https://ioi-framework.github.io/kb/"
         },
         "@graph": graph
     }
