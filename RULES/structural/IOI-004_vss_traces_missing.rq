@@ -15,7 +15,7 @@ WHERE {
   {
     SELECT (GROUP_CONCAT(DISTINCT ?vss_file; separator=" ; ") AS ?vss_infrastructure)
     WHERE {
-      GRAPH <http://example.org/mft_case4> {
+      GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/mft> {
         ?mft_entry a observable:File ;
                    core:hasFacet ?file_facet, ?mft_facet .
         ?file_facet a observable:FileFacet ;
@@ -36,7 +36,7 @@ WHERE {
 
   {
     FILTER NOT EXISTS {
-      GRAPH <http://example.org/mft_case4> {
+      GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/mft> {
         ?guid_entry a observable:File ;
                     core:hasFacet ?guid_file_facet, ?guid_mft_facet .
         ?guid_file_facet a observable:FileFacet ;
@@ -48,7 +48,7 @@ WHERE {
       }
     }
 
-    GRAPH <http://example.org/usn_case4> {
+    GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/usn> {
       ?usn_file a observable:File ;
                 core:hasFacet ?usn_file_facet, ?usn_facet .
       ?usn_file_facet a observable:FileFacet ;
@@ -67,7 +67,7 @@ WHERE {
   UNION
   {
     FILTER NOT EXISTS {
-      GRAPH <http://example.org/mft_case4> {
+      GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/mft> {
         ?guid_entry a observable:File ;
                     core:hasFacet ?guid_file_facet, ?guid_mft_facet .
         ?guid_file_facet a observable:FileFacet ;
@@ -81,7 +81,7 @@ WHERE {
       }
     }
 
-    GRAPH <http://example.org/usn_case4> {
+    GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/usn> {
       ?usn_file a observable:File ;
                 core:hasFacet ?usn_file_facet, ?usn_facet .
       ?usn_file_facet a observable:FileFacet ;
