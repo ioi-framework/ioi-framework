@@ -1,45 +1,57 @@
 {
-  "@id": "kb:office-doc--930a6940-936c-46b0-9cbe-399b3886b0ee",
-  "@type": "observable:File",
-  "core:hasFacet": [
+  "@context": {
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
     {
-      "@id": "kb:file-facet--930a6940-936c-46b0-9cbe-399b3886b0ee",
-      "@type": [
-        "core:Facet",
-        "observable:FileFacet"
-      ],
-      "observable:fileName": "password.docx",
-      "observable:filePath": ".\\Users\\ktams\\Desktop\\Confidential\\password.docx",
-      "observable:observableCreatedTime": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-03-04T10:15:43.547Z"
-      }
-    },
-    {
-      "@id": "kb:mft-facet--930a6940-936c-46b0-9cbe-399b3886b0ee",
-      "@type": [
-        "core:Facet",
-        "observable:MftRecordFacet"
-      ],
-      "observable:mftFileNameCreatedTime": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-03-04T01:10:37.528Z"
-      }
-    },
-    {
-      "@id": "kb:xml-metadata-facet--930a6940-936c-46b0-9cbe-399b3886b0ee",
-      "@type": [
-        "core:Facet",
-        "ioi-ext:OfficeXmlMetadataFacet"
-      ],
-      "ioi-ext:dctermsCreated": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-03-04T01:09:00Z"
-      },
-      "ioi-ext:dctermsModified": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-03-04T01:10:00Z"
-      }
+      "@id": "kb:office-doc--930a6940-936c-46b0-9cbe-399b3886b0ee",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:file-facet--930a6940-936c-46b0-9cbe-399b3886b0ee",
+          "@type": [
+            "core:Facet",
+            "observable:FileFacet"
+          ],
+          "observable:fileName": "password.docx",
+          "observable:filePath": ".\\Users\\ktams\\Desktop\\Confidential\\password.docx",
+          "observable:observableCreatedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T10:15:43.547Z"
+          }
+        },
+        {
+          "@id": "kb:mft-facet--930a6940-936c-46b0-9cbe-399b3886b0ee",
+          "@type": [
+            "core:Facet",
+            "observable:MftRecordFacet"
+          ],
+          "observable:mftFileNameCreatedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:10:37.528Z"
+          }
+        },
+        {
+          "@id": "kb:xml-metadata-facet--930a6940-936c-46b0-9cbe-399b3886b0ee",
+          "@type": [
+            "core:Facet",
+            "ioi-ext:OfficeXmlMetadataFacet"
+          ],
+          "ioi-ext:dctermsCreated": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:09:00Z"
+          },
+          "ioi-ext:dctermsModified": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:10:00Z"
+          }
+        }
+      ]
     }
   ]
 }
