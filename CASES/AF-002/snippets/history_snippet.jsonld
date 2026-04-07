@@ -1,11 +1,23 @@
 {
-  "@id": "kb:url--4745d90f-f0b4-41a7-aaa8-493a2529b246",
-  "@type": "observable:URL",
-  "uco-core:hasFacet": [
+  "@context": {
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
     {
-      "@id": "kb:url-facet--4b40a301-fa81-4923-b257-a353194094d8",
-      "@type": "observable:URLFacet",
-      "observable:fullValue": "https://www.google.com/search?q=db+browser+for+sqlite&oq=db+brow&gs_lcrp=EgZjaHJvbWUqBwgAEAAYgAQyBwgAEAAYgAQyDQgBEAAYgwEYsQMYgAQyBggCEEUYOTIHCAMQABiABDIHCAQQABiABDIHCAUQABiABDIHCAYQABiABDIHCAcQABiABDIHCAgQABiABDIHCAkQABiABKgCB7ACAfEFWlkpfo4jzVI&sourceid=chrome&ie=UTF-8&sei=aKhtaNHwKPiu5NoP3K356Ag"
+      "@id": "kb:url--4745d90f-f0b4-41a7-aaa8-493a2529b246",
+      "@type": "observable:URL",
+      "core:hasFacet": [
+        {
+          "@id": "kb:url-facet--4b40a301-fa81-4923-b257-a353194094d8",
+          "@type": "observable:URLFacet",
+          "observable:fullValue": "https://www.google.com/search?q=db+browser+for+sqlite&oq=db+brow&gs_lcrp=EgZjaHJvbWUqBwgAEAAYgAQyBwgAEAAYgAQyDQgBEAAYgwEYsQMYgAQyBggCEEUYOTIHCAMQABiABDIHCAQQABiABDIHCAUQABiABDIHCAYQABiABDIHCAcQABiABDIHCAgQABiABDIHCAkQABiABKgCB7ACAfEFWlkpfo4jzVI&sourceid=chrome&ie=UTF-8&sei=aKhtaNHwKPiu5NoP3K356Ag"
+        }
+      ]
     }
   ]
 }
