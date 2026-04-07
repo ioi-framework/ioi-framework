@@ -16,9 +16,9 @@ Minicase rule (stable on snippets):
 - `RULES/AF-002-grouped.rq`
 
 ## Graphs
-- `http://example.org/mft_case2`
-- `http://example.org/history_case2`
-- `http://example.org/usn_case2`
+- `https://ioi-framework.github.io/cases/AF-002/graphs/mft`
+- `https://ioi-framework.github.io/cases/AF-002/graphs/history`
+- `https://ioi-framework.github.io/cases/AF-002/graphs/usn`
 
 ## Expected Detection
 - Domain present in IndexedDB but missing from History, with USN evidence of History file modification.
