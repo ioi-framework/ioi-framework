@@ -1,16 +1,17 @@
 {
   "@context": {
-    "@vocab": "https://ontology.unifiedcyberontology.org/uco/observable/",
-    "uco-core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
     "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "kb": "https://ioi-framework.github.io/kb/"
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
   },
   "@graph": [
     {
       "@id": "kb:url-history-entry--{URL_ID}",
       "@type": "observable:URLHistoryEntry",
-      "uco-core:hasFacet": [
+      "core:hasFacet": [
         {
           "@type": "observable:URLHistoryFacet",
           "observable:url": "{URL}",
@@ -33,7 +34,7 @@
     {
       "@id": "kb:url-visit--{VISIT_ID}",
       "@type": "observable:URLVisit",
-      "uco-core:hasFacet": [
+      "core:hasFacet": [
         {
           "@type": "observable:URLVisitFacet",
           "observable:url": {
