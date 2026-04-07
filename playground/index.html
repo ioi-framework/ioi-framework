@@ -499,12 +499,12 @@ clearAllBtn.addEventListener('click', () => {
 
 function guessGraphIri(filename) {
   const stem = filename.replace(/\.(jsonld|json)$/i, '').toLowerCase();
-  if (stem.includes('mft')) return 'http://example.org/mft_case4';
-  if (stem.includes('usn')) return 'http://example.org/usn_case4';
+  if (stem.includes('mft')) return 'https://ioi-framework.github.io/cases/AF-004/graphs/mft';
+  if (stem.includes('usn')) return 'https://ioi-framework.github.io/cases/AF-004/graphs/usn';
   if (stem.includes('evtx') || stem.includes('security')) return 'http://example.org/evtx_case';
   if (stem.includes('lnk')) return 'http://example.org/lnk_case';
   if (stem.includes('office') || stem.includes('docx')) return 'http://example.org/office_case';
-  return `http://example.org/${stem.replace(/[^a-z0-9_]/g, '_')}`;
+  return `https://ioi-framework.github.io/cases/AF-NEW/graphs/${stem.replace(/[^a-z0-9_]/g, '_')}`;
 }
 
 function loadFile(file) {
@@ -1222,12 +1222,12 @@ PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
 
 # IOI-004: VSS Purge Detection
-# Load mft_test.jsonld as http://example.org/mft_case4
-# Load usn_test.jsonld as http://example.org/usn_case4
+# Load mft_test.jsonld as https://ioi-framework.github.io/cases/AF-004/graphs/mft
+# Load usn_test.jsonld as https://ioi-framework.github.io/cases/AF-004/graphs/usn
 SELECT DISTINCT ?deleted_guid ?usn_evidence WHERE {
   {
     FILTER NOT EXISTS {
-      GRAPH <http://example.org/mft_case4> {
+      GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/mft> {
         ?e a observable:File ;
            core:hasFacet ?ff, ?mf .
         ?ff observable:fileName ?n .
@@ -1236,7 +1236,7 @@ SELECT DISTINCT ?deleted_guid ?usn_evidence WHERE {
         FILTER(STRSTARTS(STR(?n), "Apps_{"))
       }
     }
-    GRAPH <http://example.org/usn_case4> {
+    GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/usn> {
       ?uf a observable:File ;
           core:hasFacet ?uff, ?umf .
       ?uff observable:fileName ?usn_filename .
@@ -1248,7 +1248,7 @@ SELECT DISTINCT ?deleted_guid ?usn_evidence WHERE {
     }
   } UNION {
     FILTER NOT EXISTS {
-      GRAPH <http://example.org/mft_case4> {
+      GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/mft> {
         ?e a observable:File ;
            core:hasFacet ?ff, ?mf .
         ?ff observable:fileName ?n .
@@ -1259,7 +1259,7 @@ SELECT DISTINCT ?deleted_guid ?usn_evidence WHERE {
         FILTER(STRLEN(STR(?n)) = 38)
       }
     }
-    GRAPH <http://example.org/usn_case4> {
+    GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/usn> {
       ?uf a observable:File ;
           core:hasFacet ?uff, ?umf .
       ?uff observable:fileName ?usn_filename .
