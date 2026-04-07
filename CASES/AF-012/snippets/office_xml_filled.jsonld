@@ -5,7 +5,7 @@
     "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
     "investigation": "https://ontology.caseontology.org/case/investigation/",
     "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
-    "kb": "http://example.org/kb/",
+    "kb": "https://ioi-framework.github.io/kb/",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "core:hasFacet": {
       "@type": "@id"
