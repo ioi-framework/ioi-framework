@@ -1,21 +1,33 @@
 {
-  "@id": "kb:mft-entry--f2db0c77-6a55-4273-a097-3af82408105a",
-  "@type": "observable:File",
-  "core:hasFacet": [
+  "@context": {
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
     {
-      "@id": "kb:mft-entry-custom-facet--f2db0c77-6a55-4273-a097-3af82408105a",
-      "@type": [
-        "ioi-ext:MftFacet",
-        "core:Facet"
-      ],
-      "ioi-ext:entryNumber": {
-        "@type": "xsd:integer",
-        "@value": 0
-      },
-      "ioi-ext:created0x10": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-01-23T22:42:03.425Z"
-      }
+      "@id": "kb:mft-entry--f2db0c77-6a55-4273-a097-3af82408105a",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:mft-entry-custom-facet--f2db0c77-6a55-4273-a097-3af82408105a",
+          "@type": [
+            "ioi-ext:MftFacet",
+            "core:Facet"
+          ],
+          "ioi-ext:entryNumber": {
+            "@type": "xsd:integer",
+            "@value": 0
+          },
+          "ioi-ext:created0x10": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-01-23T22:42:03.425Z"
+          }
+        }
+      ]
     }
   ]
 }
