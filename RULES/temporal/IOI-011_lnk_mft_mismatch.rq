@@ -1,12 +1,12 @@
 # rule_id:   IOI-011
-# version:   1.0
+# version:   1.1
 # status:    Validated
 # category:  temporal
 # title:     LNK Target Timestamp Inconsistent with MFT
 # invariant: LNK file records a target creation time that does not match the MFT entry for that file
 # artifacts: LNK, $MFT
 # added:     2025-10-01
-# changed:   (none)
+# changed:   1.0→1.1: replaced bif:datediff (Virtuoso-specific) with standard SPARQL xsd:dateTime comparison
 #
 PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
@@ -41,14 +41,12 @@ WHERE {
               ioi-ext:created0x30 ?mftFnCreated .
   }
 
-  # LNK shortcut time differs from MFT $SI
+  # Primary signal: LNK shortcut creation time differs from MFT $STANDARD_INFORMATION
   FILTER(BOUND(?lnkShortcutCreated) && ?lnkShortcutCreated != ?mftSiCreated)
 
-  # Optional correlation to $FN (seconds-level match or small tolerance); if $FN missing, keep the row
-  FILTER(
-    !BOUND(?mftFnCreated)
-    ||
-    ABS(bif:datediff('second', ?lnkShortcutCreated, ?mftFnCreated)) <= 2
-  )
+  # Secondary filter: if $FILE_NAME timestamp exists, LNK should match it
+  # (attacker stomped $SI but left $FN intact — LNK recorded the original)
+  # Standard SPARQL 1.1 equality used instead of Virtuoso-specific bif:datediff
+  FILTER(!BOUND(?mftFnCreated) || ?lnkShortcutCreated = ?mftFnCreated)
 }
 ORDER BY ?lnkFile
