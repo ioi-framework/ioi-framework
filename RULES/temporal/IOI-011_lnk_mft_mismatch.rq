@@ -9,7 +9,7 @@ WHERE {
   {
     SELECT DISTINCT ?entryNum ?lnkFile ?lnkTargetPath ?lnkTargetCreated ?lnkShortcutCreated
     WHERE {
-      GRAPH <http://example.org/lnk_case11> {
+      GRAPH <https://ioi-framework.github.io/cases/AF-011/graphs/lnk> {
         ?lnkFacet a ioi-ext:LnkFacet ;
                   ioi-ext:targetMftEntryNumber ?entryNum ;
                   ioi-ext:targetCreatedTime ?lnkTargetCreated ;
@@ -24,7 +24,7 @@ WHERE {
     }
   }
 
-  GRAPH <http://example.org/mft_case11> {
+  GRAPH <https://ioi-framework.github.io/cases/AF-011/graphs/mft> {
     ?mftFacet a ioi-ext:MftFacet ;
               ioi-ext:entryNumber ?entryNum ;
               ioi-ext:created0x10 ?mftSiCreated ;
