@@ -44,8 +44,8 @@ docker cp CASES/AF-004/test/mft_test.nt vos:/database/mft_test.nt
 docker cp CASES/AF-004/test/usn_test.nt vos:/database/usn_test.nt
 
 # Load named graphs
-docker exec vos isql 1111 dba dba "exec=ld_dir('/database', 'mft_test.nt', 'http://example.org/mft_case4');"
-docker exec vos isql 1111 dba dba "exec=ld_dir('/database', 'usn_test.nt', 'http://example.org/usn_case4');"
+docker exec vos isql 1111 dba dba "exec=ld_dir('/database', 'mft_test.nt', 'https://ioi-framework.github.io/cases/AF-004/graphs/mft');"
+docker exec vos isql 1111 dba dba "exec=ld_dir('/database', 'usn_test.nt', 'https://ioi-framework.github.io/cases/AF-004/graphs/usn');"
 docker exec vos isql 1111 dba dba "exec=rdf_loader_run();"
 docker exec vos isql 1111 dba dba "exec=checkpoint;"
 
