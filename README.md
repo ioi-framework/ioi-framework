@@ -8,22 +8,41 @@ Documentation: https://ioi-framework.github.io
 
 | Directory | Contents |
 |-----------|----------|
-| `CASES/AF-NNN/` | Ground truth documents (`ground_truth.md`), JSON-LD snippets, test graphs |
+| `CASES/AF-NNN/` | Ground truth documents, JSON-LD snippets, test graphs |
 | `RULES/temporal/` | SPARQL signatures for time-based contradictions |
 | `RULES/structural/` | SPARQL signatures for structural contradictions (e.g. VSS purge) |
 | `RULES/semantic/` | SPARQL signatures for semantic contradictions (e.g. browser history wipe) |
-| `instantiators/` | Python scripts mapping artifact parser CSV output to CASE/UCO JSON-LD |
+| `instantiators/` | Python scripts mapping artifact parser CSV → CASE/UCO JSON-LD |
 | `instantiators/templates/` | JSON-LD templates for each artifact type |
 | `ontologies/` | `ioi-ext` custom vocabulary (Turtle) |
+| `registry.json` | Artifact registry — facet names, field types, cases and rules per artifact |
+| `playground/` | Browser-based graph explorer + SPARQL runner (no install needed) |
 | `SCRIPTS/` | Utility scripts (JSON-LD → N-Triples conversion) |
 
-## Quick start
+---
 
-Full setup instructions: https://ioi-framework.github.io/quickstart/
+## Playground — no install needed
+
+The fastest way to test any rule. Open `playground/index.html` in a browser (or visit the hosted version at https://ioi-framework.github.io/playground/).
+
+1. Drag the test graphs from any `CASES/AF-NNN/test/` directory onto the drop zone — or paste a raw URL.
+2. The graph IRI is auto-detected from the filename (`af004_mft.jsonld` → `…/cases/AF-004/graphs/mft`). It is editable if you need a different IRI.
+3. Switch to the **SPARQL** tab and click an example button, or paste any rule from `RULES/`.
+4. Click **Run Query** — results appear immediately using [oxigraph](https://github.com/oxigraph/oxigraph) WASM in your browser.
+
+**Playground uses default-graph queries.** When you load multiple files, all triples are merged into the default graph. Rules that work in the playground are written without explicit `GRAPH <...>` clauses. Rules intended for Virtuoso production use named `GRAPH` clauses instead — both forms detect the same contradictions.
+
+> **Quick test:** Load `CASES/AF-004/test/mft_test.jsonld` + `CASES/AF-004/test/usn_test.jsonld`, click **IOI-004 VSS Purge** → expect 2 results.
+
+---
+
+## Virtuoso quick start
+
+Full setup: https://ioi-framework.github.io/quickstart/
 
 ```bash
-git clone https://github.com/ioi-framework/ioi-framework.git
-cd ioi-framework
+git clone https://github.com/kismatkunwar89/IoI-Framework.git
+cd IoI-Framework
 pip install -r requirements.txt
 ```
 
@@ -36,16 +55,17 @@ docker run --name vos -d -e DBA_PASSWORD=dba \
   openlink/virtuoso-opensource-7:latest
 ```
 
-Verify your setup using the AF-004 test graphs (no real data needed):
+Verify with the AF-004 test graphs:
 
 ```bash
-# Copy test graphs into container
+# Load named graphs (N-Triples format)
 docker cp CASES/AF-004/test/mft_test.nt vos:/database/mft_test.nt
 docker cp CASES/AF-004/test/usn_test.nt vos:/database/usn_test.nt
 
-# Load named graphs
-docker exec vos isql 1111 dba dba "exec=ld_dir('/database', 'mft_test.nt', 'https://ioi-framework.github.io/cases/AF-004/graphs/mft');"
-docker exec vos isql 1111 dba dba "exec=ld_dir('/database', 'usn_test.nt', 'https://ioi-framework.github.io/cases/AF-004/graphs/usn');"
+docker exec vos isql 1111 dba dba \
+  "exec=ld_dir('/database', 'mft_test.nt', 'https://ioi-framework.github.io/cases/AF-004/graphs/mft');"
+docker exec vos isql 1111 dba dba \
+  "exec=ld_dir('/database', 'usn_test.nt', 'https://ioi-framework.github.io/cases/AF-004/graphs/usn');"
 docker exec vos isql 1111 dba dba "exec=rdf_loader_run();"
 docker exec vos isql 1111 dba dba "exec=checkpoint;"
 
@@ -55,30 +75,46 @@ docker exec vos bash -lc "printf 'SPARQL\n'; cat /database/rule.rq; printf '\n;'
   | docker exec -i vos isql 1111 dba dba
 ```
 
-A result with 2 rows confirms your environment is working correctly.
+---
 
 ## Running against your own data
 
-1. Parse artifacts with [Eric Zimmermann tools](https://ericzimmerman.github.io/) (MFTECmd, EvtxECmd, LECmd)
-2. Run the appropriate instantiator: `python instantiators/mft_instantiator.py <mft.csv> output.jsonld`
-3. Convert to N-Triples: `python SCRIPTS/convert_to_ntriples.py output.jsonld output.nt`
-4. Load into Virtuoso and run any rule from `RULES/`
+1. Parse artifacts with [Eric Zimmermann tools](https://ericzimmerman.github.io/) (MFTECmd, EvtxECmd, LECmd, PECmd)
+2. Run the appropriate instantiator:
+   ```bash
+   python instantiators/mft_instantiator.py mft.csv output.jsonld
+   ```
+3. **Playground**: drag `output.jsonld` into the playground and run any rule directly.
+4. **Virtuoso**: convert to N-Triples, load into named graph, run rule with `GRAPH <...>` clauses.
 
-See https://ioi-framework.github.io/quickstart/ for the full walkthrough.
+For a new artifact type not yet in the registry, use the [IOI MCP Server](https://github.com/kismatkunwar89/ioi-mcp-server) which auto-generates the instantiator, templates, and registry entry from your CSV.
+
+---
+
+## SPARQL rules — two forms
+
+Every rule in `RULES/` has a version header and works in both environments:
+
+| Environment | Query form | How to use |
+|-------------|-----------|------------|
+| Playground (browser) | Default-graph — no `GRAPH` clauses | Drag JSON-LD files → run rule as-is |
+| Virtuoso (production) | Named-graph — explicit `GRAPH <IRI>` clauses | Load N-Triples → run rule with graph IRIs |
+
+The rule header documents which form is in the file and whether it has been tested on Virtuoso.
+
+---
 
 ## Ground truth documents
 
-Each case in `CASES/AF-NNN/ground_truth.md` documents the forensic scenario, expected contradictions, and artifact sources. Read the ground truth document before running its rule to understand what a positive result means.
+Each `CASES/AF-NNN/ground_truth.md` describes the forensic scenario, expected contradiction, and what a positive result means. Read it before running the rule.
 
 ## Namespace
-
-Custom properties use the `ioi-ext` vocabulary:
 
 ```
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
 ```
 
-Full vocabulary reference: https://ioi-framework.github.io/ns/ioi-ext/
+Full vocabulary: https://ioi-framework.github.io/ns/ioi-ext/
 
 ## Requirements
 
