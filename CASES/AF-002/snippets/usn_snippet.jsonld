@@ -1,24 +1,36 @@
 {
-  "@id": "kb:usn-entry--4f00ccca-03f7-464e-8534-fa5a1a27847e",
-  "@type": "observable:File",
-  "core:hasFacet": [
+  "@context": {
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
     {
-      "@id": "kb:usn-entry-file-facet--4f00ccca-03f7-464e-8534-fa5a1a27847e",
-      "@type": "observable:FileFacet",
-      "observable:fileName": "History-journal",
-      "observable:filePath": "History-journal"
-    },
-    {
-      "@id": "kb:usn-entry-custom-facet--4f00ccca-03f7-464e-8534-fa5a1a27847e",
-      "@type": [
-        "ioi-ext:UsnFacet",
-        "core:Facet"
-      ],
-      "ioi-ext:updateReasons": "DataOverwrite|DataExtend|DataTruncation|FileCreate|Close",
-      "ioi-ext:updateTimestamp": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-07-08T23:32:39.523892Z"
-      }
+      "@id": "kb:usn-entry--4f00ccca-03f7-464e-8534-fa5a1a27847e",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:usn-entry-file-facet--4f00ccca-03f7-464e-8534-fa5a1a27847e",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "History-journal",
+          "observable:filePath": "History-journal"
+        },
+        {
+          "@id": "kb:usn-entry-custom-facet--4f00ccca-03f7-464e-8534-fa5a1a27847e",
+          "@type": [
+            "ioi-ext:UsnFacet",
+            "core:Facet"
+          ],
+          "ioi-ext:updateReasons": "DataOverwrite|DataExtend|DataTruncation|FileCreate|Close",
+          "ioi-ext:updateTimestamp": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-07-08T23:32:39.523892Z"
+          }
+        }
+      ]
     }
   ]
 }
