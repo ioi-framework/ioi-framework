@@ -6,7 +6,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT ?event_type ?time ?file_name ?update_reasons ?seed_uri ?seed_graph
 WHERE {
   {
-    GRAPH <http://example.org/security_case7> {
+    GRAPH <https://ioi-framework.github.io/cases/AF-007/graphs/security> {
       ?event a observable:EventRecord ;
              core:hasFacet ?std_facet, ?custom_facet .
       ?std_facet a observable:EventRecordFacet ;
@@ -24,7 +24,7 @@ WHERE {
   }
   UNION
   {
-    GRAPH <http://example.org/usn_case7> {
+    GRAPH <https://ioi-framework.github.io/cases/AF-007/graphs/usn> {
       ?file a observable:File ;
             core:hasFacet ?fileFacet, ?usnFacet .
       ?fileFacet a observable:FileFacet ;
