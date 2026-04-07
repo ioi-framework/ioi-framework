@@ -1,8 +1,29 @@
-# Placeholder — CI validation workflow (to be implemented)
 name: IoI Validation
-on: [push, pull_request]
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install rdflib
+
+      - name: Validate registry.json
+        run: python scripts/validate_registry.py
+
+      - name: SPARQL syntax check
+        run: python scripts/validate_sparql.py
+
+      - name: JSON-LD parse check
+        run: python scripts/validate_jsonld.py
