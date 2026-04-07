@@ -1,27 +1,39 @@
 {
-  "@id": "kb:evtx-entry--6b02a8f1-511e-46c2-be37-ddff9f52f248",
-  "@type": "observable:EventRecord",
-  "core:hasFacet": [
+  "@context": {
+    "kb": "https://ioi-framework.github.io/kb/",
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
     {
-      "@id": "kb:evtx-entry-standard-facet--6b02a8f1-511e-46c2-be37-ddff9f52f248",
-      "@type": [
-        "observable:EventRecordFacet",
-        "core:Facet"
-      ],
-      "observable:eventID": "1102",
-      "observable:startTime": {
-        "@type": "xsd:dateTime",
-        "@value": "2025-09-11T05:57:31.8483911+00:00"
-      },
-      "observable:eventRecordText": "Event log cleared"
-    },
-    {
-      "@id": "kb:evtx-entry-custom-facet--6b02a8f1-511e-46c2-be37-ddff9f52f248",
-      "@type": [
-        "ioi-ext:EventLogFacet",
-        "core:Facet"
-      ],
-      "ioi-ext:channel": "Security"
+      "@id": "kb:evtx-entry--6b02a8f1-511e-46c2-be37-ddff9f52f248",
+      "@type": "observable:EventRecord",
+      "core:hasFacet": [
+        {
+          "@id": "kb:evtx-entry-standard-facet--6b02a8f1-511e-46c2-be37-ddff9f52f248",
+          "@type": [
+            "observable:EventRecordFacet",
+            "core:Facet"
+          ],
+          "observable:eventID": "1102",
+          "observable:startTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-09-11T05:57:31.8483911+00:00"
+          },
+          "observable:eventRecordText": "Event log cleared"
+        },
+        {
+          "@id": "kb:evtx-entry-custom-facet--6b02a8f1-511e-46c2-be37-ddff9f52f248",
+          "@type": [
+            "ioi-ext:EventLogFacet",
+            "core:Facet"
+          ],
+          "ioi-ext:channel": "Security"
+        }
+      ]
     }
   ]
 }
