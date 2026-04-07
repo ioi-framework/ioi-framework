@@ -6,7 +6,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT DISTINCT
   ?officeFile ?fileName ?filePath ?xmlCreated ?mftSiCreated ?mftFnCreated
 WHERE {
-  GRAPH <http://example.org/office_case12> {
+  GRAPH <https://ioi-framework.github.io/cases/AF-012/graphs/office> {
     ?officeFile a observable:File ;
                 core:hasFacet ?xmlFacet , ?mftFacet , ?fileFacet .
 
