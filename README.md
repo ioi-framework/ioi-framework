@@ -30,9 +30,19 @@ The fastest way to test any rule. Open `playground/index.html` in a browser (or 
 3. Switch to the **SPARQL** tab and click an example button, or paste any rule from `RULES/`.
 4. Click **Run Query** — results appear immediately using [oxigraph](https://github.com/oxigraph/oxigraph) WASM in your browser.
 
-**Playground uses default-graph queries.** When you load multiple files, all triples are merged into the default graph. Rules that work in the playground are written without explicit `GRAPH <...>` clauses. Rules intended for Virtuoso production use named `GRAPH` clauses instead — both forms detect the same contradictions.
+**Playground now supports named-graph queries directly.** The same canonical rule form with explicit `GRAPH <IRI>` clauses works in both the browser playground (oxigraph) and Virtuoso, so you do not need a separate default-graph-only version of each rule.
 
 > **Quick test:** Load `CASES/AF-004/test/mft_test.jsonld` + `CASES/AF-004/test/usn_test.jsonld`, click **IOI-004 VSS Purge** → expect 2 results.
+
+### Playground performance
+
+| File size | Load time | Heap | Named-graph queries | Works |
+|-----------|-----------|------|---------------------|-------|
+| 1k / 0.7MB | 392ms | 25MB | ✓ `count=1,000` | ✓ |
+| 10k / 6.7MB | 1.66s | 228MB | ✓ `count=10,000` | ✓ |
+| 50k / 33.8MB | 8s | 1.1GB | ✓ `count=50,000` | ⚠️ borderline |
+
+Named-graph `FILTER NOT EXISTS` across two graphs now works correctly in oxigraph. In testing, `SDELETE64.EXE` was flagged, `CMD.EXE` stayed clean, and the query completed in about 15ms.
 
 ---
 
@@ -97,10 +107,10 @@ Every rule in `RULES/` has a version header and works in both environments:
 
 | Environment | Query form | How to use |
 |-------------|-----------|------------|
-| Playground (browser) | Default-graph — no `GRAPH` clauses | Drag JSON-LD files → run rule as-is |
+| Playground (browser) | Named-graph — explicit `GRAPH <IRI>` clauses | Drag JSON-LD files → run the same rule used in production |
 | Virtuoso (production) | Named-graph — explicit `GRAPH <IRI>` clauses | Load N-Triples → run rule with graph IRIs |
 
-The rule header documents which form is in the file and whether it has been tested on Virtuoso.
+One canonical rule form works everywhere: explicit `GRAPH <IRI>` clauses for oxigraph and Virtuoso. `MINUS` subquery patterns are still unreliable across engines; `FILTER NOT EXISTS` is the recommended portable pattern.
 
 ---
 
