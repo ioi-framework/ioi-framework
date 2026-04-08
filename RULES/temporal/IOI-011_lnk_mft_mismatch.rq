@@ -1,17 +1,16 @@
 # rule_id:   IOI-011
-# version:   1.1
+# version:   1.2
 # status:    Validated
 # category:  temporal
 # title:     LNK Target Timestamp Inconsistent with MFT
 # invariant: LNK file records a target creation time that does not match the MFT entry for that file
 # artifacts: LNK, $MFT
 # added:     2025-10-01
-# changed:   1.0→1.1: replaced bif:datediff (Virtuoso-specific) with standard SPARQL xsd:dateTime comparison
+# changed:   1.1→1.2: restored WindowsLnkFacet to match validated AF-011 LNK graphs; compare $FN at second precision using portable SPARQL
 #
 PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 SELECT DISTINCT
   ?lnkFile ?lnkTargetPath ?lnkShortcutCreated ?lnkTargetCreated ?mftSiCreated ?mftFnCreated
@@ -20,7 +19,7 @@ WHERE {
     SELECT DISTINCT ?entryNum ?lnkFile ?lnkTargetPath ?lnkTargetCreated ?lnkShortcutCreated
     WHERE {
       GRAPH <https://ioi-framework.github.io/cases/AF-011/graphs/lnk> {
-        ?lnkFacet a ioi-ext:LnkFacet ;
+        ?lnkFacet a ioi-ext:WindowsLnkFacet ;
                   ioi-ext:targetMftEntryNumber ?entryNum ;
                   ioi-ext:targetCreatedTime ?lnkTargetCreated ;
                   ioi-ext:targetFilePath ?lnkTargetPath .
@@ -41,12 +40,10 @@ WHERE {
               ioi-ext:created0x30 ?mftFnCreated .
   }
 
-  # Primary signal: LNK shortcut creation time differs from MFT $STANDARD_INFORMATION
-  FILTER(BOUND(?lnkShortcutCreated) && ?lnkShortcutCreated != ?mftSiCreated)
+  BIND(SUBSTR(STR(?lnkShortcutCreated), 1, 19) AS ?lnkShortcutCreatedSec)
+  BIND(SUBSTR(STR(?mftFnCreated), 1, 19) AS ?mftFnCreatedSec)
 
-  # Secondary filter: if $FILE_NAME timestamp exists, LNK should match it
-  # (attacker stomped $SI but left $FN intact — LNK recorded the original)
-  # Standard SPARQL 1.1 equality used instead of Virtuoso-specific bif:datediff
-  FILTER(!BOUND(?mftFnCreated) || ?lnkShortcutCreated = ?mftFnCreated)
+  FILTER(BOUND(?lnkShortcutCreated) && ?lnkShortcutCreated != ?mftSiCreated)
+  FILTER(?lnkShortcutCreatedSec = ?mftFnCreatedSec)
 }
 ORDER BY ?lnkFile

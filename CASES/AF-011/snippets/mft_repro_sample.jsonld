@@ -1,0 +1,157 @@
+{
+  "@context": {
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "kb": "https://ioi-framework.github.io/kb/"
+  },
+  "@graph": [
+    {
+      "@id": "kb:mft-entry--af011-password",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:mft-entry-file-facet--af011-password",
+          "@type": "observable:FileFacet",
+          "observable:fileName": "password.docx",
+          "observable:extension": ".docx",
+          "observable:filePath": ".\\Users\\ktams\\Desktop\\Confidential\\password.docx",
+          "observable:isDirectory": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "observable:sizeInBytes": {
+            "@type": "xsd:integer",
+            "@value": 13231
+          },
+          "observable:ntfsHardLinkCount": {
+            "@type": "xsd:integer",
+            "@value": 1
+          },
+          "observable:ntfsOwnerSID": "2013"
+        },
+        {
+          "@id": "kb:mft-entry-custom-facet--af011-password",
+          "@type": [
+            "ioi-ext:MftFacet",
+            "core:Facet"
+          ],
+          "ioi-ext:entryNumber": {
+            "@type": "xsd:integer",
+            "@value": 116327
+          },
+          "ioi-ext:sequenceNumber": {
+            "@type": "xsd:integer",
+            "@value": 6
+          },
+          "ioi-ext:mftFlags": {
+            "@type": "xsd:integer",
+            "@value": 0
+          },
+          "ioi-ext:inUse": {
+            "@type": "xsd:boolean",
+            "@value": "true"
+          },
+          "ioi-ext:parentEntryNumber": {
+            "@type": "xsd:integer",
+            "@value": 238269
+          },
+          "ioi-ext:parentSequenceNumber": {
+            "@type": "xsd:integer",
+            "@value": 11
+          },
+          "ioi-ext:parentPath": ".\\Users\\ktams\\Desktop\\Confidential",
+          "ioi-ext:fileName": "password.docx",
+          "ioi-ext:extension": ".docx",
+          "ioi-ext:fileSize": {
+            "@type": "xsd:integer",
+            "@value": 13231
+          },
+          "ioi-ext:referenceCount": {
+            "@type": "xsd:integer",
+            "@value": 1
+          },
+          "ioi-ext:reparseTarget": "",
+          "ioi-ext:isDirectory": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "ioi-ext:hasAds": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "ioi-ext:isAds": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "ioi-ext:siLessThanFn": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "ioi-ext:uSecZeros": {
+            "@type": "xsd:integer",
+            "@value": 0
+          },
+          "ioi-ext:copied": {
+            "@type": "xsd:boolean",
+            "@value": "false"
+          },
+          "ioi-ext:siFlags": {
+            "@type": "xsd:integer",
+            "@value": 32
+          },
+          "ioi-ext:nameType": {
+            "@type": "xsd:integer",
+            "@value": "3"
+          },
+          "ioi-ext:created0x10": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T10:15:43.547Z"
+          },
+          "ioi-ext:created0x30": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:10:37.528Z"
+          },
+          "ioi-ext:lastModified0x10": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-06T12:27:09.179Z"
+          },
+          "ioi-ext:lastModified0x30": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:10:38.441Z"
+          },
+          "ioi-ext:lastRecordChange0x10": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:36:24.931Z"
+          },
+          "ioi-ext:lastRecordChange0x30": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:10:38.496Z"
+          },
+          "ioi-ext:lastAccess0x10": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:36:41.840Z"
+          },
+          "ioi-ext:lastAccess0x30": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:10:38.441Z"
+          },
+          "ioi-ext:updateSequenceNumber": {
+            "@type": "xsd:integer",
+            "@value": 480034480
+          },
+          "ioi-ext:logfileSequenceNumber": {
+            "@type": "xsd:integer",
+            "@value": 2507331983
+          },
+          "ioi-ext:securityId": "2013",
+          "ioi-ext:objectIdFileDroid": "b6c59fc9-de6c-11ef-a4a7-000c297dd31e",
+          "ioi-ext:loggedUtilStream": "",
+          "ioi-ext:zoneIdContents": "",
+          "ioi-ext:sourceFile": ""
+        }
+      ]
+    }
+  ]
+}

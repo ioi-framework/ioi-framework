@@ -1,0 +1,78 @@
+{
+  "@context": {
+    "core": "https://ontology.unifiedcyberontology.org/uco/core/",
+    "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+    "ioi-ext": "https://ioi-framework.github.io/ns/ioi-ext/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "kb": "https://ioi-framework.github.io/kb/"
+  },
+  "@graph": [
+    {
+      "@id": "kb:lnk-entry--af011-password",
+      "@type": "observable:File",
+      "core:hasFacet": [
+        {
+          "@id": "kb:lnk-entry-file-facet--af011-password",
+          "@type": [
+            "core:Facet",
+            "observable:FileFacet"
+          ],
+          "observable:fileName": "C:\\Users\\ktams\\AppData\\Roaming\\Microsoft\\Windows\\Recent\\password.lnk",
+          "observable:filePath": "C:\\Users\\ktams\\AppData\\Roaming\\Microsoft\\Windows\\Recent\\password.lnk",
+          "observable:extension": ".lnk",
+          "observable:isDirectory": false,
+          "observable:sizeInBytes": {
+            "@type": "xsd:integer",
+            "@value": 13231
+          },
+          "observable:accessedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-10T16:18:27Z"
+          },
+          "observable:observableCreatedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T01:10:37Z"
+          },
+          "observable:modifiedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T02:03:38Z"
+          }
+        },
+        {
+          "@id": "kb:lnk-facet--af011-password",
+          "@type": [
+            "core:Facet",
+            "ioi-ext:WindowsLnkFacet"
+          ],
+          "ioi-ext:targetFilePath": "C:\\Users\\ktams\\Desktop\\Confidential\\password.docx",
+          "ioi-ext:targetFileName": "C:\\Users\\ktams\\Desktop\\Confidential\\password.docx",
+          "ioi-ext:targetCreatedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T10:15:43Z"
+          },
+          "ioi-ext:targetModifiedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-06T12:27:09Z"
+          },
+          "ioi-ext:targetAccessedTime": {
+            "@type": "xsd:dateTime",
+            "@value": "2025-03-04T02:03:37Z"
+          },
+          "ioi-ext:relativePath": "..\\..\\..\\..\\..\\Desktop\\Confidential\\password.docx",
+          "ioi-ext:workingDirectory": "C:\\Users\\ktams\\Desktop\\Confidential",
+          "ioi-ext:arguments": "",
+          "ioi-ext:targetMftEntryNumber": {
+            "@type": "xsd:integer",
+            "@value": 116327
+          },
+          "ioi-ext:targetMftSequenceNumber": {
+            "@type": "xsd:integer",
+            "@value": 6
+          },
+          "ioi-ext:machineId": "dfir",
+          "ioi-ext:machineMacAddress": "00:0c:29:7d:d3:1e"
+        }
+      ]
+    }
+  ]
+}
