@@ -181,6 +181,10 @@ body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;o
 .sparql-examples{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
 .example-btn{font-size:11px;padding:4px 8px;border-radius:var(--radius-sm);background:var(--surface-3);color:var(--text-muted);border:1px solid var(--border)}
 .example-btn:hover{color:var(--text);border-color:var(--text-faint)}
+.query-note{font-size:11px;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;line-height:1.6}
+.query-note code{font-size:10.5px;background:var(--surface-3);padding:1px 4px;border-radius:3px;color:var(--text)}
+.query-note .qn-ok{color:#437A22}
+.query-note .qn-no{color:#A13544}
 .sparql-textarea{flex:1;background:var(--bg);color:var(--accent);font-family:var(--mono);font-size:13px;line-height:1.6;padding:16px;border:none;resize:none;outline:none;tab-size:2}
 .sparql-textarea::placeholder{color:var(--text-faint)}
 .sparql-run-bar{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -319,6 +323,7 @@ body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;o
         <div class="empty-title">No graph data loaded</div>
         <div class="empty-desc">Drop a CASE/UCO JSON-LD file above or load one from a URL to visualize the knowledge graph.</div>
         <div class="empty-hint">Supports files from the IOI MCP Server</div>
+      <div class="empty-hint" style="margin-top:6px">Tip: prefix files with the case ID — <code style="font-size:10px">af011_mft.jsonld</code> → <code style="font-size:10px">AF-011/graphs/mft</code></div>
       </div>
     </div>
     <aside class="node-sidebar" id="nodeSidebar">
@@ -363,6 +368,13 @@ body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;o
             <button class="example-btn" data-example="ioi004">IOI-004 VSS Purge</button>
             <button class="example-btn" data-example="count">Count by Type</button>
           </div>
+        </div>
+        <div class="query-note">
+          <span>✎ <strong>Writing queries:</strong></span>
+          <span><span class="qn-ok">✓</span> Always use <code>GRAPH &lt;IRI&gt;</code> — copy IRI from the panel on the left</span>
+          <span><span class="qn-ok">✓</span> Cross-artifact anti-join: <code>FILTER NOT EXISTS&nbsp;{&nbsp;GRAPH&nbsp;&lt;IRI&gt;&nbsp;{&nbsp;...&nbsp;}&nbsp;}</code></span>
+          <span><span class="qn-no">✗</span> <code>MINUS</code> subquery — unreliable across graphs</span>
+          <span><span class="qn-no">✗</span> <code>bif:</code> functions — Virtuoso-only, not supported here</span>
         </div>
         <textarea class="sparql-textarea" id="sparqlEditor" placeholder="SELECT ?s ?p ?o WHERE {&#10;  ?s ?p ?o .&#10;}" spellcheck="false"></textarea>
         <div class="sparql-run-bar">

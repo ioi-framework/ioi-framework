@@ -1,37 +1,62 @@
 # rule_id:   IOI-012
-# version:   1.0
+# version:   1.1
 # status:    Validated
 # category:  temporal
 # title:     Office XML Metadata Timestamp Inconsistent with MFT
-# invariant: Office core.xml creation time does not match MFT created0x10 for the same file
+# invariant: Office core.xml created time must not predate the MFT $SI created0x10 for the same file
 # artifacts: Office core.xml, $MFT
 # added:     2025-10-01
-# changed:   (none)
+# changed:   1.0→1.1: fix facet names to match framework data
+#              ioi-ext:OfficeXmlMetadataFacet → ioi-ext:OfficeXMLFacet (registry canonical)
+#              observable:MftRecordFacet      → ioi-ext:MftFacet       (framework extension)
+#              single-graph design → two named graphs (office + mft) matching instantiator output
+#              cross-graph fileName join with temporal FILTER
+# testing:   FILTER(xsd:dateTime() < xsd:dateTime()) works in both rdflib and oxigraph
 #
-PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+PREFIX core:       <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
-PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ioi-ext:    <https://ioi-framework.github.io/ns/ioi-ext/>
+PREFIX xsd:        <http://www.w3.org/2001/XMLSchema#>
 
-SELECT DISTINCT
-  ?officeFile ?fileName ?filePath ?xmlCreated ?mftSiCreated ?mftFnCreated
+# Detects: Office core.xml recorded a creation timestamp that is EARLIER than
+# the MFT $STANDARD_INFORMATION created0x10 for the same file.
+# This indicates the document metadata was backdated after creation —
+# a timestamp manipulation anti-forensic technique.
+#
+# Load:
+#   office_xml_snippet.jsonld → <.../cases/AF-012/graphs/office>
+#   mft_snippet.jsonld        → <.../cases/AF-012/graphs/mft>
+
+SELECT DISTINCT ?officeEntry ?fileName ?xmlCreated ?mftSiCreated ?mftFnCreated
 WHERE {
   GRAPH <https://ioi-framework.github.io/cases/AF-012/graphs/office> {
-    ?officeFile a observable:File ;
-                core:hasFacet ?xmlFacet , ?mftFacet , ?fileFacet .
+    ?officeEntry a observable:File ;
+                 core:hasFacet ?xmlFacet, ?officeFileFacet .
 
-    ?xmlFacet a ioi-ext:OfficeXmlMetadataFacet ;
-              ioi-ext:dctermsCreated ?xmlCreated .
+    ?xmlFacet a ioi-ext:OfficeXMLFacet ;
+              ioi-ext:created ?xmlCreated .
 
-    ?mftFacet a observable:MftRecordFacet ;
-              observable:mftFileNameCreatedTime ?mftFnCreated .
-
-    ?fileFacet a observable:FileFacet ;
-               observable:fileName ?fileName ;
-               observable:filePath ?filePath ;
-               observable:observableCreatedTime ?mftSiCreated .
-
-    FILTER(xsd:dateTime(?xmlCreated) < xsd:dateTime(?mftSiCreated))
+    ?officeFileFacet a observable:FileFacet ;
+                     observable:fileName ?fileName .
   }
+
+  GRAPH <https://ioi-framework.github.io/cases/AF-012/graphs/mft> {
+    ?mftEntry a observable:File ;
+              core:hasFacet ?mftFacet, ?mftFileFacet .
+
+    ?mftFacet a ioi-ext:MftFacet ;
+              ioi-ext:created0x10 ?mftSiCreated ;
+              ioi-ext:created0x30 ?mftFnCreated .
+
+    ?mftFileFacet a observable:FileFacet ;
+                  observable:fileName ?mftFileName .
+
+    # Case-insensitive filename join — Office stores full name, MFT may differ in case
+    FILTER(UCASE(STR(?mftFileName)) = UCASE(STR(?fileName)))
+  }
+
+  # Core detection: Office XML claims creation BEFORE the MFT entry was created
+  # indicating the metadata was set to an earlier date (timestamp backdating)
+  FILTER(xsd:dateTime(?xmlCreated) < xsd:dateTime(?mftSiCreated))
 }
-ORDER BY ?filePath
+ORDER BY ?fileName
