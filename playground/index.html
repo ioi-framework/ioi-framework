@@ -1305,28 +1305,32 @@ SELECT DISTINCT ?deleted_guid ?usn_evidence WHERE {
     }
   }
 }`,
-  count: `SELECT ?type (COUNT(?s) AS ?count) WHERE {
-  ?s a ?type .
+  count: `# Count nodes by type across all loaded graphs
+SELECT ?type (COUNT(?s) AS ?count) WHERE {
+  GRAPH ?g { ?s a ?type }
 }
 GROUP BY ?type
 ORDER BY DESC(?count)`,
-  explore: `PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
+  explore: `PREFIX core:       <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
-PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
+PREFIX ioi-ext:    <https://ioi-framework.github.io/ns/ioi-ext/>
 
-# Explore any loaded graph — see all files + properties
-# Works with any MCP-generated JSON-LD
-SELECT ?fileName ?parentPath ?artifactProp ?value WHERE {
+# Explore any loaded graph — works for any size, any artifact type.
+# Replace ?g with the specific GRAPH IRI shown in the panel above.
+SELECT ?graphName ?fileName ?artifactProp ?value WHERE {
   GRAPH ?g {
     ?entry a observable:File ;
            core:hasFacet ?facet .
     OPTIONAL { ?facet observable:fileName ?fileName }
-    OPTIONAL { ?facet ioi-ext:parentPath ?parentPath }
-    OPTIONAL { ?facet ?artifactProp ?value .
-               FILTER(STRSTARTS(STR(?artifactProp), "https://ioi-framework.github.io/ns/ioi-ext/")) }
+    OPTIONAL {
+      ?facet ?artifactProp ?value .
+      FILTER(STRSTARTS(STR(?artifactProp),
+             "https://ioi-framework.github.io/ns/ioi-ext/"))
+    }
   }
+  BIND(STR(?g) AS ?graphName)
 }
-ORDER BY ?fileName
+ORDER BY ?graphName ?fileName
 LIMIT 50`
 };
 
@@ -1409,18 +1413,22 @@ function buildOxStore() {
   });
 
   if (allQuads.length) {
+    // Warn for large graphs — browser memory limit
+    const totalTriples = allQuads.length;
+    if (totalTriples > 50000) {
+      console.warn(`Large graph: ${totalTriples} triples. Consider using Virtuoso for production-size datasets.`);
+    }
     try {
-      // Load as N-Quads (named graphs for GRAPH <iri> queries)
+      // Load as N-Quads ONLY (named graph support via GRAPH <iri>).
+      // We intentionally do NOT load a default-graph copy:
+      //   - The spread operator on large arrays blows the JS call stack
+      //   - It doubles memory usage (2× heap for identical data)
+      //   - Named-graph queries (GRAPH <iri>) work for all sizes
+      //   - Use GRAPH <iri> in all SPARQL queries — see loaded IRIs in the panel
       oxStore.load(allQuads.join('\n'), { format: 'nq' });
-      // Also load as N-Triples into default graph (for simple queries without GRAPH)
-      const allTriples = [];
-      namedGraphs.forEach(({ triples }) => {
-        allTriples.push(...buildNTriplesFromTriples(triples));
-      });
-      oxStore.load(allTriples.join('\n'), { format: 'nt' });
-      console.log(`Loaded ${allQuads.length} quads + ${allTriples.length} default triples`);
+      console.log(`Loaded ${allQuads.length} named-graph triples. Use GRAPH <iri> in SPARQL queries.`);
     } catch(e) {
-      console.warn('N-Quads/N-Triples load error:', e);
+      console.warn('N-Quads load error:', e);
     }
   }
 }
