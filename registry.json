@@ -376,9 +376,8 @@
       "tool_key": null,
       "tool_arg_mode": null,
       "tool_output_flag": null,
-      "tool_output_ext": "_core.xml",
-      "tool_output_format": "xml",
-      "zip_member": "docProps/core.xml",
+      "tool_output_ext": ".json",
+      "tool_output_format": "json",
       "max_files": 0,
       "cleanup_raw": true
     }
