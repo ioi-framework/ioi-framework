@@ -12,12 +12,12 @@ PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
 
-SELECT ?domain ?evidence_files ?mft_examples ?usn_events ?usn_evidence
+SELECT ?domain ?evidence_files ?mft_files ?usn_events ?usn_evidence
 WHERE {
   {
     SELECT ?domain
            (COUNT(DISTINCT ?mft_file) AS ?evidence_files)
-           (GROUP_CONCAT(DISTINCT ?mft_file; separator=" ; ") AS ?mft_examples)
+           (GROUP_CONCAT(DISTINCT ?mft_file; separator=" ; ") AS ?mft_files)
     WHERE {
       {
         SELECT DISTINCT ?domain ?mft_file

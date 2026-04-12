@@ -16,8 +16,8 @@ This file documents how raw artifact fields were mapped into CASE/UCO JSON-LD fo
 | --- | --- | --- | --- |
 | (example) | (example) | (example) | (example) |
 
-## DFC-EXT Extensions Used
-- (list dfc-ext properties used in this case)
+## IOI-EXT Extensions Used
+- (list ioi-ext properties used in this case)
 
 ## Notes / Assumptions
 - (time normalization, path normalization, etc.)

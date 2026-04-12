@@ -1,11 +1,11 @@
-# dfc-ext Properties Used
+# ioi-ext Properties Used
 
-This document lists the custom `dfc-ext` properties introduced for the IoI
+This document lists the custom `ioi-ext` properties introduced for the IoI
 framework. These properties extend CASE/UCO where the required artifact fields
 are not represented by existing core predicates. The extension is published
-as a lightweight vocabulary in `VOCAB/dfc-ext.ttl`.
+as a lightweight vocabulary in `ontologies/ioi-ext.ttl`.
 
-Namespace: `https://ioi-framework.github.io/ns/ioi-ext/` #need to make it
+Namespace: `https://ioi-framework.github.io/ns/ioi-ext/`
 
 ## MFT
 - ioi-ext:entryNumber

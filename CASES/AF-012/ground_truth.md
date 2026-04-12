@@ -64,6 +64,7 @@ THEN FLAG 'AF-012: Timestomping Detected via Office XML Metadata'
 
 ## Evidence Summary
 
-- **Office XML (core.xml)**: dcterms:created = 2025-02-19T17:24 (original)
-- **MFT $SI (0x10)**: Shows forged timestamp (2/16/2025 10:15)
-- **Inconsistency**: XML metadata predates MFT timestamp, indicating forgery
+- **Office XML (core.xml)**: dcterms:created = `2025-03-04T01:09:00Z` (original)
+- **MFT $SI (0x10)**: `2025-03-04T10:15:43Z` (forged — ~9 hours later)
+- **Inconsistency**: XML metadata predates MFT $SI timestamp by ~9 hours, confirming timestomping
+

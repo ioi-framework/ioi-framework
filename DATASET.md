@@ -3,7 +3,7 @@
 This repository distributes mapping templates, SPARQL IoI signatures, and redacted examples.
 
 ## Included
-- JSON-LD templates (CASE/UCO + dfc-ext)
+- JSON-LD templates (CASE/UCO + ioi-ext)
 - Mapping scripts (CSV/XML -> JSON-LD)
 - SPARQL rules
 - Small redacted JSON-LD snippets per case

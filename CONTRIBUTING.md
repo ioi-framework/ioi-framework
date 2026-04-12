@@ -1,242 +1,204 @@
 # Contributing to the IoI Framework
 
-There are three levels of contribution depending on your background:
+Thank you for contributing. There are three levels of contribution depending on your technical background:
 
 - **Level 1 (no code)** — Open a GitHub issue describing an anti-forensic case in plain language using the ground truth template. No SPARQL or JSON-LD required.
-- **Level 2 (SPARQL)** — Write an IoI SPARQL rule for a validated ground truth case. Core community contribution.
-- **Level 3 (instantiators)** — Write a new artifact instantiator, templates, and registry entry for a new artifact type.
+- **Level 2 (SPARQL / JSON-LD)** — Write a CASE/UCO template and IoI SPARQL rule from a validated ground truth document. This is the core community contribution focus.
+- **Level 3 (instantiators)** — Write a Template Instantiator for a new artifact type or parser, or contribute a tool integration such as an Autopsy plugin.
 
-All contributions go through a Pull Request and are peer-reviewed before merging.
+All Level 2 and 3 contributions go through a Pull Request and are peer-reviewed before merging.
 
 ---
 
-## Repository Structure
+## Repository structure at a glance
 
 ```
-CASES/AF-NNN/               Case datasets, ground truth, test graphs
-RULES/{temporal|structural|semantic}/
-                            SPARQL .rq detection rules
-instantiators/              Python instantiator scripts (one per artifact type)
-instantiators/templates/    JSON-LD template files (4 per artifact type)
-ontologies/                 ioi-ext.ttl — custom vocabulary
-registry.json               Artifact registry — single source of truth
-                            (facet names, field types, export strategy, graph segment)
-playground/                 Browser SPARQL explorer
-SCRIPTS/                    JSON-LD → N-Triples conversion utilities
-scripts/                    Validation scripts (CI)
+_cases/               Case pages (one .md per scenario)
+_rules/               IoI rule pages (one .md per rule)
+_instantiators/       Template Instantiator pages (one .md per parser)
+CASES/AF-NNN/         Artifact datasets (CSV/JSON/JSONLD per case)
+RULES/{category}/     SPARQL .rq files organised by category
+instantiators/        Python instantiator scripts
+TEMPLATES/{subdir}/   Case-agnostic CASE/UCO JSON-LD templates
+ontologies/           ioi-ext.ttl namespace definitions
 ```
 
 ---
 
-## What Can I Contribute?
+## What can I contribute?
 
-| Contribution | Files to add or modify |
-|---|---|
-| New anti-forensic case | `CASES/AF-NNN/ground_truth.md` + `CASES/AF-NNN/test/*.jsonld` |
-| New IoI rule (existing artifact) | `RULES/{category}/IOI-NNN_name.rq` |
-| New artifact type | `instantiators/{artifact}_instantiator.py` + `instantiators/templates/{artifact}/` + `registry.json` entry + `RULES/` rule |
-| ioi-ext vocabulary | `ontologies/ioi-ext.ttl` |
+| Contribution type      | Files to add                                                              |
+|------------------------|---------------------------------------------------------------------------|
+| New anti-forensic case | `_cases/af-NNN.md` + `CASES/AF-NNN/ground_truth.md`                       |
+| New IoI rule           | `_rules/ioi-NNN.md` + `RULES/{category}/IOI-NNN_name.rq`                 |
+| New instantiator       | `_instantiators/inst-NNN.md` + `instantiators/NNN_instantiator.py`       |
+| New CASE/UCO template  | `TEMPLATES/{artifact_type}/` subfolder                                    |
+| ioi-ext property       | Edit `ontologies/ioi-ext.ttl` + update documentation                     |
+| Documentation fix      | Edit site pages directly                                                  |
+
+You can contribute one type in a single PR, or bundle a case + its rule together — that is encouraged.
 
 ---
 
-## Adding a New SPARQL Rule (Level 2)
+## Case front-matter schema (`_cases/af-NNN.md`)
 
-### Required header on every `.rq` file
+Every case file **must** include all required fields. Optional fields should be included where applicable.
 
-```sparql
-# rule_id:    IOI-NNN
-# version:    1.0
-# status:     Community
-# category:   temporal | structural | semantic
-# title:      Short description
-# invariant:  The expected property φ that this rule enforces
-# artifacts:  mft, usn        ← lowercase artifact_type keys from registry.json
-# contributor: @github-handle
-# added:      YYYY-MM-DD
-# changed:    (none)
+```yaml
+---
+# ── Required ──────────────────────────────────────────────
+case_id:      AF-NNN           # Sequential ID. Check existing cases first.
+title:        "Short descriptive title"
+category:     Temporal         # Temporal | Structural | Semantic
+status:       Community        # Community | Validated | Deprecated
+description:  "One sentence describing the anti-forensic action and contradiction signal."
+artifacts:                     # List of artifact types involved (use standard names below)
+  - $MFT
+  - $UsnJrnl
+contributor:  "@github-handle"
+date_added:   YYYY-MM-DD
+
+# ── Optional ───────────────────────────────────────────────
+rule_link:    /rules/ioi-NNN/  # Link to corresponding IoI rule page
+tags:                          # Free-form tags for filtering
+  - timestamp-manipulation
+os:           Windows 10       # Target OS and version
+tools_used:                    # Anti-forensic tools used in scenario
+  - timestomper.exe
+---
 ```
 
-### Rule versioning policy (immutable logic)
+**Standard artifact names** (use these exactly for consistent filtering):
+`$MFT`, `$UsnJrnl`, `$LogFile`, `Security.evtx`, `System.evtx`, `LNK`, `Prefetch`, `Chrome History`, `Firefox History`, `Registry`, `Office core.xml`, `IndexedDB`, `SQLite DB`
 
-- Rule logic **never changes** once published — only the version number updates
-- `1.0 → 1.1` — additive change (new `SELECT` variable, comment fix): OK
-- `1.0 → 2.0` — logic change: archive old version to `RULES/archive/`, publish new
+---
 
-### Always use `GRAPH <IRI>` clauses
+## IoI rule front-matter schema (`_rules/ioi-NNN.md`)
 
-Named-graph form works in the playground (oxigraph) AND Virtuoso. Never write default-graph queries.
+```yaml
+---
+# ── Required ──────────────────────────────────────────────
+rule_id:      IOI-NNN
+title:        "Short descriptive title"
+category:     Temporal         # Temporal | Structural | Semantic
+status:       Community        # Community | Validated | Deprecated
+description:  "One sentence describing what the rule detects."
+artifacts:
+  - $MFT
+  - LNK
+invariant:    "Human-readable statement of the expected invariant φ"
+sparql_file:  ioi-NNN.rq       # filename under rules/sparql/
+contributor:  "@github-handle"
+date_added:   YYYY-MM-DD
 
-```sparql
-PREFIX core:       <https://ontology.unifiedcyberontology.org/uco/core/>
-PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
-PREFIX ioi-ext:    <https://ioi-framework.github.io/ns/ioi-ext/>
-
-SELECT ?entry ?fileName WHERE {
-  GRAPH <https://ioi-framework.github.io/cases/AF-NNN/graphs/mft> {
-    ?entry a observable:File ;
-           core:hasFacet ?facet .
-    ?facet a ioi-ext:MftFacet ;
-           observable:fileName ?fileName .
-  }
-}
+# ── Optional ───────────────────────────────────────────────
+case_link:    /cases/af-NNN/
+version:      "1.0"
+tested_on:
+  - "Virtuoso 7.2"
+  - "Apache Jena Fuseki 4.x"
+notes: ""
+---
 ```
 
-### Graph IRI convention
+---
 
-```
-https://ioi-framework.github.io/cases/{case_id}/graphs/{graph_segment}
-```
+## Instantiator front-matter schema (`_instantiators/inst-NNN.md`)
 
-Graph segments per artifact (from `registry.json`):
+```yaml
+---
+# ── Required ──────────────────────────────────────────────
+inst_id:      INST-NNN
+title:        "Artifact type — e.g. NTFS $MFT Instantiator"
+artifact:     $MFT              # Single artifact type this parser handles
+parser_tool:  MFTECmd           # Upstream parser tool
+input_format: CSV               # CSV | JSON | JSONL | SQLite | XML
+output:       JSON-LD           # Always JSON-LD
+template:     mft               # Subdirectory under TEMPLATES/
+script:       mft_instantiator.py  # Script under instantiators/
+contributor:  "@github-handle"
+date_added:   YYYY-MM-DD
 
-| artifact_type | graph_segment |
-|---|---|
-| `mft` | `mft` |
-| `usn` | `usn` |
-| `lnk` | `lnk` |
-| `evtx` | `evtx` |
-| `history` | `history` |
-| `office_xml` | `office` |
-
-### Cross-artifact anti-joins — use `FILTER NOT EXISTS`
-
-```sparql
-# ✅ Works in playground (oxigraph) and Virtuoso
-FILTER NOT EXISTS {
-  GRAPH <https://ioi-framework.github.io/cases/AF-NNN/graphs/mft> {
-    ?ff a observable:FileFacet ;
-        observable:fileName ?mftFN .
-    FILTER(UCASE(STR(?mftFN)) = UCASE(STR(?executableName)))
-  }
-}
-
-# ❌ Avoid — MINUS subquery unreliable in both engines for cross-graph correlation
+# ── Optional ───────────────────────────────────────────────
+status:       Community        # Community | Validated | Deprecated
+python_version: "3.9+"
+dependencies:
+  - rdflib>=6.0
+notes: ""
+---
 ```
 
-### Test before submitting
+---
 
-1. Load test graphs in the playground — rule must fire (`fired: true`)
-2. Run negative test — rule must NOT fire when contradiction is absent
-3. Run local validation:
+## Step-by-step: submitting a PR
+
+### 1. Fork and branch
 
 ```bash
-python scripts/validate_sparql.py
-python scripts/validate_registry.py
+git clone https://github.com/ioi-framework/ioi-framework.git
+cd ioi-framework
+git checkout -b add/your-scenario-name
 ```
 
----
+Use branch naming convention: `add/short-name`, `fix/...`, `docs/...`
 
-## Adding a New Artifact Type (Level 3)
+### 2. Pick an ID
 
-Add **4 things** — all in this repo:
+Use a placeholder ID (e.g. `AF-NEW`) if unsure — maintainers assign the canonical sequential ID during review. Numbering is flexible and finalized at merge time.
 
-### 1. Registry entry (`registry.json`)
+### 3. Add your files
 
-Add an entry under `"artifacts"`. Key must be the lowercase `artifact_type` identifier.
-
-```json
-"prefetch": {
-  "artifact_type":       "prefetch",
-  "graph_segment":       "prefetch",
-  "graph_segment_aliases": [],
-  "artifact_id":         "ART-007",
-  "full_name":           "Windows Prefetch (.pf)",
-  "parser_tool":         "PECmd",
-  "input_format":        "CSV",
-  "facet":               "ioi-ext:PrefetchFacet",
-  "instantiator":        "instantiators/prefetch_instantiator.py",
-  "template_dir":        "instantiators/templates/prefetch/",
-  "status":              "community",
-  "cases":               [],
-  "rules":               [],
-  "export_strategy":     "binary_tool",
-  "file_patterns":       ["%.pf"],
-  "fallback_patterns":   [],
-  "parent_path_filter":  "Prefetch",
-  "tool_key":            "PECMD_PATH",
-  "tool_arg_mode":       "single_file",
-  "tool_output_flag":    "--csv",
-  "tool_output_ext":     ".csv",
-  "tool_output_format":  "csv",
-  "max_files":           0,
-  "cleanup_raw":         true
-}
-```
-
-### 2. Instantiator script
-
-Follow the **Instantiator Contract** exactly — see [`INSTANTIATOR_CONTRACT.md`](./INSTANTIATOR_CONTRACT.md).
-
-Key rules:
-- CLI: `python3 {artifact}_instantiator.py <input_file> <output_file>` — always 2 positional args
-- Entry point: `fill_template_from_data(input_path, output_path)`
-- Use `argparse` — never raw `sys.argv`
-- Templates loaded via `Path(__file__).parent / 'templates' / '{artifact}'`
-- Node IDs: `kb:{artifact}--{uuid}` pattern
-- Namespaces: `core:hasFacet` (not `uco-core:`), no `example.org`
-
-### 3. Templates (4 files)
+Follow the schemas above. The minimum required files are:
 
 ```
-instantiators/templates/{artifact}/
-  {artifact}_template_base.json         ← @context + empty @graph
-  {artifact}_template-source_file.json  ← source File node
-  {artifact}_template-entry_clean.json  ← entry File + Facets
-  {artifact}_template-action.json       ← InvestigativeAction
+CASES/AF-NEW/
+  ground_truth.md          # describes the case
+  test/
+    <artifact>_test.jsonld # synthetic graph that makes the rule fire
+RULES/{category}/
+  IOI-NEW_your_rule.rq     # SPARQL signature
 ```
 
-All `@context` blocks must include:
-```json
-{
-  "kb":         "https://ioi-framework.github.io/kb/",
-  "ioi-ext":    "https://ioi-framework.github.io/ns/ioi-ext/",
-  "core":       "https://ontology.unifiedcyberontology.org/uco/core/",
-  "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
-  "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
-  "xsd":        "http://www.w3.org/2001/XMLSchema#"
-}
-```
+**Building the test graph** — the `test/` JSON-LD is a small synthetic knowledge graph (5–10 records) with fabricated values that trigger the contradiction. No real case data. You only need to include the fields your SPARQL actually touches — if your rule only checks `observable:fileName` and `ioi-ext:parentPath`, those are the only two fields needed. Omit everything else.
 
-No `example.org` anywhere.
+To get the correct node/facet structure for the fields you do need:
 
-### 4. SPARQL rule
+- **If an existing case uses the same artifact** (e.g. `$MFT`, `$UsnJrnl`, `LNK`) — copy the relevant fields from that case's `CASES/AF-NNN/snippets/` files, replace values with synthetic ones.
+- **If it is a new artifact type** — use `TEMPLATES/{artifact_type}/` as the structure reference.
 
-Add `RULES/{category}/IOI-NNN_{artifact}_name.rq` following the rule contract above.
+The test graph must use the prefixes `core:`, `observable:`, `ioi-ext:` with their real URIs, and load into named graphs matching the IRIs in your `.rq` file.
 
-### Validate your PR
+Then run the local validation script before pushing:
 
 ```bash
-python scripts/validate_registry.py   # registry.json schema check
-python scripts/validate_sparql.py     # rule header + syntax check
-python scripts/validate_jsonld.py     # template @context check
+python scripts/validate_frontmatter.py
 ```
+
+### 4. Open the Pull Request
+
+Use the PR template (auto-loaded when you open a PR). Fill out every checkbox. Assign at least one reviewer from the maintainer team.
+
+### 5. Review process
+
+- Automated CI checks run first (schema validation, broken link check)
+- A maintainer or community peer reviewer will review within 14 days
+- Address any requested changes on the same branch
+- Once approved, a maintainer merges and the site deploys automatically
 
 ---
 
-## Namespace Reference
+## Status lifecycle
 
-```
-kb:         https://ioi-framework.github.io/kb/
-ioi-ext:    https://ioi-framework.github.io/ns/ioi-ext/
-core:       https://ontology.unifiedcyberontology.org/uco/core/
-observable: https://ontology.unifiedcyberontology.org/uco/observable/
-uco-action: https://ontology.unifiedcyberontology.org/uco/action/
-xsd:        http://www.w3.org/2001/XMLSchema#
-```
+| Status      | Meaning                                                             |
+|-------------|---------------------------------------------------------------------|
+| `Community` | Contributed by a community member, not independently validated      |
+| `Validated` | Independently reproduced or reviewed by the core maintainer team    |
+| `Deprecated`| Superseded, known-broken, or no longer applicable                   |
 
----
-
-## PR Process
-
-1. Fork → branch (`add/short-name`, `fix/...`, `docs/...`)
-2. Add files following the contracts above
-3. Run validation scripts locally — must pass
-4. Open PR using the PR template, fill all checkboxes
-5. CI runs automatically — must pass all checks
-6. Maintainer reviews within 14 days
+To request promotion from `Community` to `Validated`, open a PR adding a `validation_note` field to the front matter and tagging a maintainer.
 
 ---
 
-## Code of Conduct
+## Code of conduct
 
-Be respectful. Contributions must be grounded in reproducible forensic evidence. Do not submit signatures based on theory only — provide a ground truth specification and, where possible, a test dataset.
+Be respectful. Forensic community contributions are expected to be grounded in evidence and reproducible. Do not submit signatures based on theoretical manipulation only — provide a ground-truth specification and, where possible, a paired dataset.

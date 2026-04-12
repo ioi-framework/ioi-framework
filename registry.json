@@ -1,12 +1,9 @@
 {
   "schema_version": "1.0",
   "kb_namespace": "https://ioi-framework.github.io/kb/",
-  "graph_iri_pattern": "https://ioi-framework.github.io/cases/{case_id}/graphs/{artifact_type}",
+  "graph_iri_pattern": "https://ioi-framework.github.io/cases/{case_id}/graphs/{artifact_lower}",
   "artifacts": {
-    "mft": {
-      "artifact_type": "mft",
-      "graph_segment": "mft",
-      "graph_segment_aliases": [],
+    "MFT": {
       "artifact_id": "ART-001",
       "full_name": "$MFT (Master File Table)",
       "parser_tool": "MFTECmd",
@@ -74,25 +71,9 @@
           "ZoneIdContents",
           "SourceFile"
         ]
-      },
-      "export_strategy": "binary_tool",
-      "file_patterns": [
-        "$MFT"
-      ],
-      "fallback_patterns": [],
-      "parent_path_filter": null,
-      "tool_key": "MFTECMD_PATH",
-      "tool_arg_mode": "single_file",
-      "tool_output_flag": "--csv",
-      "tool_output_ext": ".csv",
-      "tool_output_format": "csv",
-      "max_files": 0,
-      "cleanup_raw": true
+      }
     },
-    "usn": {
-      "artifact_type": "usn",
-      "graph_segment": "usn",
-      "graph_segment_aliases": [],
+    "USN": {
       "artifact_id": "ART-002",
       "full_name": "$UsnJrnl:$J (USN Change Journal)",
       "parser_tool": "MFTECmd",
@@ -134,28 +115,9 @@
           "FileAttributes",
           "SourceInfo"
         ]
-      },
-      "export_strategy": "binary_tool",
-      "file_patterns": [
-        "$UsnJrnl:$J"
-      ],
-      "fallback_patterns": [
-        "$J",
-        "$UsnJrnl"
-      ],
-      "parent_path_filter": null,
-      "tool_key": "MFTECMD_PATH",
-      "tool_arg_mode": "single_file",
-      "tool_output_flag": "--csv",
-      "tool_output_ext": ".csv",
-      "tool_output_format": "csv",
-      "max_files": 0,
-      "cleanup_raw": true
+      }
     },
-    "lnk": {
-      "artifact_type": "lnk",
-      "graph_segment": "lnk",
-      "graph_segment_aliases": [],
+    "LNK": {
       "artifact_id": "ART-003",
       "full_name": "Windows Shell Link (.lnk)",
       "parser_tool": "LECmd",
@@ -200,27 +162,9 @@
           "MachineID",
           "MachineMACAddress"
         ]
-      },
-      "export_strategy": "directory_tool",
-      "file_patterns": [
-        "%.lnk"
-      ],
-      "fallback_patterns": [],
-      "parent_path_filter": "Recent",
-      "tool_key": "LECMD_PATH",
-      "tool_arg_mode": "directory",
-      "tool_output_flag": "--csv",
-      "tool_output_ext": ".csv",
-      "tool_output_format": "csv",
-      "max_files": 1000,
-      "cleanup_raw": false
+      }
     },
-    "evtx": {
-      "artifact_type": "evtx",
-      "graph_segment": "evtx",
-      "graph_segment_aliases": [
-        "security"
-      ],
+    "EVTX": {
       "artifact_id": "ART-004",
       "full_name": "Windows Event Log (.evtx)",
       "parser_tool": "EvtxECmd",
@@ -255,25 +199,9 @@
           "Level",
           "Keywords"
         ]
-      },
-      "export_strategy": "binary_tool",
-      "file_patterns": [
-        "Security.evtx"
-      ],
-      "fallback_patterns": [],
-      "parent_path_filter": null,
-      "tool_key": "EVTXECMD_PATH",
-      "tool_arg_mode": "single_file",
-      "tool_output_flag": "--json",
-      "tool_output_ext": ".jsonl",
-      "tool_output_format": "jsonl",
-      "max_files": 0,
-      "cleanup_raw": true
+      }
     },
-    "history": {
-      "artifact_type": "history",
-      "graph_segment": "history",
-      "graph_segment_aliases": [],
+    "BrowserHistory": {
       "artifact_id": "ART-005",
       "full_name": "Chrome / Browser History SQLite",
       "parser_tool": "Hindsight",
@@ -308,25 +236,9 @@
           "TransitionType",
           "VisitSource"
         ]
-      },
-      "export_strategy": "sqlite",
-      "file_patterns": [
-        "History"
-      ],
-      "fallback_patterns": [],
-      "parent_path_filter": "Chrome",
-      "tool_key": null,
-      "tool_arg_mode": null,
-      "tool_output_flag": null,
-      "tool_output_ext": ".json",
-      "tool_output_format": "json",
-      "max_files": 0,
-      "cleanup_raw": true
+      }
     },
-    "office_xml": {
-      "artifact_type": "office_xml",
-      "graph_segment": "office",
-      "graph_segment_aliases": [],
+    "OfficeXML": {
       "artifact_id": "ART-006",
       "full_name": "Office Open XML Core Properties (docx/xlsx/pptx)",
       "parser_tool": "python-docx / manual",
@@ -364,22 +276,7 @@
           "Keywords",
           "Category"
         ]
-      },
-      "export_strategy": "zip_xml",
-      "file_patterns": [
-        "%.docx",
-        "%.xlsx",
-        "%.pptx"
-      ],
-      "fallback_patterns": [],
-      "parent_path_filter": null,
-      "tool_key": null,
-      "tool_arg_mode": null,
-      "tool_output_flag": null,
-      "tool_output_ext": ".json",
-      "tool_output_format": "json",
-      "max_files": 0,
-      "cleanup_raw": true
+      }
     }
   }
 }

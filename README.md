@@ -70,14 +70,13 @@ python SCRIPTS/convert_to_ntriples.py CASES/AF-004/test/mft_test.jsonld mft.nt
 python SCRIPTS/convert_to_ntriples.py CASES/AF-004/test/usn_test.jsonld usn.nt
 
 # Load into named graphs
-docker cp mft.nt vos:/database/mft.nt
-docker cp usn.nt vos:/database/usn.nt
-docker exec vos isql 1111 dba dba \
-  "exec=ld_dir('/database','mft.nt','https://ioi-framework.github.io/cases/AF-004/graphs/mft');"
-docker exec vos isql 1111 dba dba \
-  "exec=ld_dir('/database','usn.nt','https://ioi-framework.github.io/cases/AF-004/graphs/usn');"
-docker exec vos isql 1111 dba dba "exec=rdf_loader_run();"
-docker exec vos isql 1111 dba dba "exec=checkpoint;"
+# Files must go to /usr/share/proj/ (DirsAllowed in virtuoso.ini)
+docker cp mft.nt vos:/usr/share/proj/mft.nt
+docker cp usn.nt vos:/usr/share/proj/usn.nt
+docker exec -i vos isql 1111 dba dba <<'EOF'
+DB.DBA.TTLP_MT(file_to_string_output('/usr/share/proj/mft.nt'), '', 'https://ioi-framework.github.io/cases/AF-004/graphs/mft', 512);
+DB.DBA.TTLP_MT(file_to_string_output('/usr/share/proj/usn.nt'), '', 'https://ioi-framework.github.io/cases/AF-004/graphs/usn', 512);
+EOF
 
 # Run IOI-004 via SPARQL HTTP endpoint — expect 2 rows
 curl -s "http://localhost:8890/sparql" \

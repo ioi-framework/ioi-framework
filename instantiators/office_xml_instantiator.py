@@ -93,15 +93,27 @@ def _parse_core_xml(xml_bytes):
         return {'xml_creator': '', 'xml_last_modified_by': '', 'xml_created': '', 'xml_modified': ''}
 
 
-def extract_from_docx(input_path):
+def extract_from_docx(input_path, override_filepath=None):
     """
     Manual investigator path — extract XML metadata directly from a .docx file.
     fs_* timestamps are intentionally omitted (come from mft_instantiator separately).
+
+    override_filepath: if provided, used as observable:filePath (must match MFT graph path
+                       for IOI-012 join to work). If None, user is prompted interactively.
     """
     p = Path(input_path)
+
+    if override_filepath:
+        filepath = override_filepath
+    else:
+        print('  [Manual mode] Enter the original file path as it appears in the MFT')
+        print('  (e.g. /Users/ktams/Desktop/Confidential/password.docx)')
+        print('  This must match the MFT graph filePath for IOI-012 to detect a hit.')
+        filepath = input('  filePath > ').strip() or str(p.resolve())
+
     record = {
         'filename':  p.name,
-        'filepath':  str(p.resolve()),
+        'filepath':  filepath,
         'extension': p.suffix.lstrip('.'),
         'size':      p.stat().st_size,
     }
@@ -211,7 +223,7 @@ def build_graph(records):
 
 # ── Entry point ──────────────────────────────────────────────────────────────
 
-def fill_template_from_data(input_path, output_path):
+def fill_template_from_data(input_path, output_path, override_filepath=None):
     """
     Dispatch to correct loader based on input file type, then build JSON-LD.
     """
@@ -221,13 +233,13 @@ def fill_template_from_data(input_path, output_path):
     if ext == '.json':
         records = load_from_merged_json(input_path)
     elif ext in ('.docx', '.xlsx', '.pptx', '.docm', '.xlsm', '.pptm'):
-        records = extract_from_docx(input_path)
+        records = extract_from_docx(input_path, override_filepath=override_filepath)
     else:
         # Fallback: try JSON first, then docx
         try:
             records = load_from_merged_json(input_path)
         except (json.JSONDecodeError, ValueError):
-            records = extract_from_docx(input_path)
+            records = extract_from_docx(input_path, override_filepath=override_filepath)
 
     print('Processing %d Office document(s)' % len(records))
 
@@ -261,8 +273,13 @@ def main():
                     'Input can be a merged JSON (Autopsy path) or a .docx file (manual path).')
     parser.add_argument('input',  help='Merged JSON from ArtifactExporter OR path to .docx file')
     parser.add_argument('output', help='Output JSON-LD file')
+    parser.add_argument('--filepath', default=None,
+                        help='(Manual mode only) Original file path as it appears in the MFT '
+                             '(e.g. /Users/ktams/Desktop/Confidential/password.docx). '
+                             'Must match MFT graph filePath for IOI-012 join to work. '
+                             'If omitted, you will be prompted interactively.')
     args = parser.parse_args()
-    fill_template_from_data(args.input, args.output)
+    fill_template_from_data(args.input, args.output, override_filepath=args.filepath)
 
 
 if __name__ == '__main__':
