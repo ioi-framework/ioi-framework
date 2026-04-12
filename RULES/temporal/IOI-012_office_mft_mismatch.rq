@@ -1,17 +1,15 @@
 # rule_id:   IOI-012
-# version:   1.1
+# version:   1.2
 # status:    Validated
 # category:  temporal
 # title:     Office XML Metadata Timestamp Inconsistent with MFT
 # invariant: Office core.xml created time must not predate the MFT $SI created0x10 for the same file
-# artifacts: Office core.xml, $MFT
+# artifacts: office_xml, mft
 # added:     2025-10-01
-# changed:   1.0→1.1: fix facet names to match framework data
-#              ioi-ext:OfficeXmlMetadataFacet → ioi-ext:OfficeXMLFacet (registry canonical)
-#              observable:MftRecordFacet      → ioi-ext:MftFacet       (framework extension)
-#              single-graph design → two named graphs (office + mft) matching instantiator output
-#              cross-graph fileName join with temporal FILTER
-# testing:   FILTER(xsd:dateTime() < xsd:dateTime()) works in both rdflib and oxigraph
+# changed:   1.0→1.1: fix facet names, two named graphs, cross-graph fileName join
+#            1.1→1.2: case-agnostic graph IRIs (SPARQLExecutor rewrites AF-012 → case_id at runtime)
+#                     join on normalized filePath (forward-slash, absolute) to eliminate Cartesian product
+#                     GROUP BY + MIN(?mftSiCreated) as fallback dedupe for residual filename-only matches
 #
 PREFIX core:       <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
@@ -23,11 +21,14 @@ PREFIX xsd:        <http://www.w3.org/2001/XMLSchema#>
 # This indicates the document metadata was backdated after creation —
 # a timestamp manipulation anti-forensic technique.
 #
+# Graph IRIs use AF-012 as placeholder — SPARQLExecutor rewrites to the current case ID at runtime.
 # Load:
-#   office_xml_snippet.jsonld → <.../cases/AF-012/graphs/office>
-#   mft_snippet.jsonld        → <.../cases/AF-012/graphs/mft>
+#   office_xml_instantiator output → <.../cases/{case_id}/graphs/office>
+#   mft_instantiator output        → <.../cases/{case_id}/graphs/mft>
 
-SELECT DISTINCT ?officeEntry ?fileName ?xmlCreated ?mftSiCreated ?mftFnCreated
+SELECT ?officeEntry ?fileName ?filePath ?xmlCreated
+       (MIN(?mftSiCreated) AS ?mftSiCreated)
+       (MIN(?mftFnCreated) AS ?mftFnCreated)
 WHERE {
   GRAPH <https://ioi-framework.github.io/cases/AF-012/graphs/office> {
     ?officeEntry a observable:File ;
@@ -37,7 +38,8 @@ WHERE {
               ioi-ext:created ?xmlCreated .
 
     ?officeFileFacet a observable:FileFacet ;
-                     observable:fileName ?fileName .
+                     observable:fileName ?fileName ;
+                     observable:filePath ?filePath .
   }
 
   GRAPH <https://ioi-framework.github.io/cases/AF-012/graphs/mft> {
@@ -49,14 +51,15 @@ WHERE {
               ioi-ext:created0x30 ?mftFnCreated .
 
     ?mftFileFacet a observable:FileFacet ;
-                  observable:fileName ?mftFileName .
+                  observable:filePath ?mftFilePath .
 
-    # Case-insensitive filename join — Office stores full name, MFT may differ in case
-    FILTER(UCASE(STR(?mftFileName)) = UCASE(STR(?fileName)))
+    # Primary join: normalized filePath (forward-slash absolute) — eliminates Cartesian product
+    # Both graphs normalized to /path/to/file.docx by their respective instantiators
+    FILTER(LCASE(STR(?mftFilePath)) = LCASE(STR(?filePath)))
   }
 
   # Core detection: Office XML claims creation BEFORE the MFT entry was created
-  # indicating the metadata was set to an earlier date (timestamp backdating)
   FILTER(xsd:dateTime(?xmlCreated) < xsd:dateTime(?mftSiCreated))
 }
-ORDER BY ?fileName
+GROUP BY ?officeEntry ?fileName ?filePath ?xmlCreated
+ORDER BY ?filePath

@@ -118,7 +118,7 @@ def fill_template_from_json(json_file_path, output_file_path):
         if last_visit:
             url_obj["uco-core:hasFacet"][0]["observable:lastVisit"] = {
                 "@type": "xsd:dateTime",
-                "@value": last_visit.replace(' ', 'T') + 'Z'
+                "@value": webkit_to_datetime(last_visit) if isinstance(last_visit, int) else last_visit.replace(' ', 'T') + 'Z'
             }
 
         graph.append(url_obj)
@@ -153,7 +153,7 @@ def fill_template_from_json(json_file_path, output_file_path):
         if visit_datetime:
             facet["observable:visitTime"] = {
                 "@type": "xsd:dateTime",
-                "@value": visit_datetime.replace(' ', 'T') + 'Z'
+                "@value": webkit_to_datetime(visit_datetime) if isinstance(visit_datetime, int) else visit_datetime.replace(' ', 'T') + 'Z'
             }
 
         # Visit duration
