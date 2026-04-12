@@ -124,9 +124,28 @@ ioi-ext:channel a rdf:Property ;
   rdfs:range xsd:string .
 
 # Office XML (ioi-ext:OfficeXMLFacet)
+# Predicate names match IOI-012 rule exactly.
 
-ioi-ext:xmlCreatedTime a rdf:Property ;
+ioi-ext:created a rdf:Property ;
   rdfs:label "Office XML created time" ;
-  rdfs:comment "Created time extracted from Office XML metadata." ;
+  rdfs:comment "Created time extracted from docProps/core.xml (dcterms:created). Used by IOI-012 to detect timestamp backdating." ;
   rdfs:domain ioi-ext:OfficeXMLFacet ;
   rdfs:range xsd:dateTime .
+
+ioi-ext:modified a rdf:Property ;
+  rdfs:label "Office XML modified time" ;
+  rdfs:comment "Last modified time extracted from docProps/core.xml (dcterms:modified)." ;
+  rdfs:domain ioi-ext:OfficeXMLFacet ;
+  rdfs:range xsd:dateTime .
+
+ioi-ext:creator a rdf:Property ;
+  rdfs:label "Office XML creator" ;
+  rdfs:comment "Document author extracted from docProps/core.xml (dc:creator)." ;
+  rdfs:domain ioi-ext:OfficeXMLFacet ;
+  rdfs:range xsd:string .
+
+ioi-ext:lastModifiedBy a rdf:Property ;
+  rdfs:label "Office XML last modified by" ;
+  rdfs:comment "Last modifier extracted from docProps/core.xml (cp:lastModifiedBy)." ;
+  rdfs:domain ioi-ext:OfficeXMLFacet ;
+  rdfs:range xsd:string .
