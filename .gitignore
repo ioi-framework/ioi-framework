@@ -2,3 +2,9 @@
 /Autopsy/
 /Paper/
 /conversion_time_figure.png
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
