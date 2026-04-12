@@ -40,7 +40,7 @@ def extract_filename(path):
 
 def load_template_snippets():
     """Load template snippets."""
-    base_path = Path(__file__).parent
+    base_path = Path(__file__).parent / 'templates' / 'lnk'
 
     # Load base template
     with open(base_path / "lnk_template_base.json", 'r') as f:

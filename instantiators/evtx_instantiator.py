@@ -19,7 +19,7 @@ def generate_uuid():
 
 def load_template_snippets():
     """Load template snippets."""
-    base_path = Path(__file__).parent
+    base_path = Path(__file__).parent / 'templates' / 'evtx'
 
     # Load base template
     with open(base_path / "evtx_template_base.json", 'r') as f:

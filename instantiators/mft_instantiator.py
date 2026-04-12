@@ -116,7 +116,7 @@ def generate_uuid():
 
 def load_template_snippets():
     """Load template snippets."""
-    base_path = Path(__file__).parent
+    base_path = Path(__file__).parent / 'templates' / 'mft'
 
     # Load base template
     with open(base_path / "mft_template_base.json", 'r') as f:
@@ -234,7 +234,15 @@ def fill_template_from_csv(csv_file_path, output_file_path):
         # Fill file facet properties
         file_facet['observable:fileName'] = row.get('FileName', '')
         file_facet['observable:extension'] = row.get('Extension', '')
-        file_facet['observable:filePath'] = f"{row.get('ParentPath', '')}{row.get('FileName', '')}"
+        _parent = row.get('ParentPath', '').replace('\\', '/').rstrip('/')
+        _fname  = row.get('FileName', '')
+        _path   = (_parent + '/' + _fname) if _parent else _fname
+        # Normalize to absolute forward-slash path (strip leading dot, ensure leading /)
+        if _path.startswith('./'):
+            _path = _path[1:]
+        elif _path and not _path.startswith('/'):
+            _path = '/' + _path
+        file_facet['observable:filePath'] = _path
         file_facet['observable:isDirectory']['@value'] = row.get(
             'IsDirectory', 'FALSE').lower()
         file_facet['observable:sizeInBytes']['@value'] = sanitize_int(row.get(
@@ -402,7 +410,14 @@ def fill_template_chunked(csv_file_path, output_base_path, chunk_size):
             # Reuse same field-filling logic (copied from fill_template_from_csv)
             file_facet['observable:fileName'] = row.get('FileName', '')
             file_facet['observable:extension'] = row.get('Extension', '')
-            file_facet['observable:filePath'] = f"{row.get('ParentPath', '')}{row.get('FileName', '')}"
+            _parent = row.get('ParentPath', '').replace('\\', '/').rstrip('/')
+            _fname  = row.get('FileName', '')
+            _path   = (_parent + '/' + _fname) if _parent else _fname
+            if _path.startswith('./'):
+                _path = _path[1:]
+            elif _path and not _path.startswith('/'):
+                _path = '/' + _path
+            file_facet['observable:filePath'] = _path
             file_facet['observable:isDirectory']['@value'] = row.get('IsDirectory', 'FALSE').lower()
             file_facet['observable:sizeInBytes']['@value'] = sanitize_int(row.get('FileSize', '0'))
             file_facet['observable:ntfsHardLinkCount']['@value'] = sanitize_int(row.get('ReferenceCount', '0'))
