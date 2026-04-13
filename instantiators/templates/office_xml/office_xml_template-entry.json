@@ -60,13 +60,10 @@
                 }
             },
             {
-                "@id": "kb:content-facet--{ENTRY_UUID}",
-                "@type": ["core:Facet", "observable:ContentDataFacet"],
-                "observable:creator": "{DC_CREATOR}"
-            },
-            {
-                "@id": "kb:xml-metadata-facet--{ENTRY_UUID}",
-                "@type": ["core:Facet", "ioi-ext:OfficeXmlMetadataFacet"],
+                "@id": "kb:office_xml-ext-facet--{ENTRY_UUID}",
+                "@type": ["core:Facet", "ioi-ext:OfficeXMLFacet"],
+                "ioi-ext:dcCreator": "{DC_CREATOR}",
+                "ioi-ext:cpLastModifiedBy": "{LAST_MODIFIED_BY}",
                 "ioi-ext:dctermsCreated": {
                     "@type": "xsd:dateTime",
                     "@value": "{DCTERMS_CREATED}"
@@ -74,9 +71,7 @@
                 "ioi-ext:dctermsModified": {
                     "@type": "xsd:dateTime",
                     "@value": "{DCTERMS_MODIFIED}"
-                },
-                "ioi-ext:cpLastModifiedBy": "{LAST_MODIFIED_BY}",
-                "ioi-ext:metadataSource": "docProps/core.xml"
+                }
             }
         ]
     }

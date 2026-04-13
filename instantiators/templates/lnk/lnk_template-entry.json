@@ -29,7 +29,7 @@
             },
             {
                 "@id": "kb:lnk-entry-lnk-facet--{ENTRY_UUID}",
-                "@type": "ioi-ext:LnkFacet",
+                "@type": "ioi-ext:WindowsLnkFacet",
                 "ioi-ext:targetFilePath": "",
                 "ioi-ext:targetFileName": "",
                 "ioi-ext:targetCreatedTime": {

@@ -22,6 +22,7 @@ CLI (standard 2-argument contract — callable by MapperRunner):
 """
 
 import argparse
+import copy
 import json
 import uuid
 import zipfile
@@ -132,20 +133,43 @@ def extract_from_docx(input_path, override_filepath=None):
     return [record]
 
 
+# ── Template loader ──────────────────────────────────────────────────────────
+
+def load_template_snippets():
+    base = Path(__file__).parent / 'templates' / 'office_xml'
+    with open(base / 'office_xml_template-entry.json') as f:
+        entry_snippet = json.load(f)
+    return entry_snippet
+
+
+def _replace_placeholders(obj, replacements):
+    """Recursively replace {PLACEHOLDER} strings in a dict/list structure."""
+    if isinstance(obj, dict):
+        return {k: _replace_placeholders(v, replacements) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_replace_placeholders(i, replacements) for i in obj]
+    elif isinstance(obj, str):
+        for placeholder, value in replacements.items():
+            obj = obj.replace(placeholder, value)
+        return obj
+    return obj
+
+
 # ── Core JSON-LD builder ─────────────────────────────────────────────────────
 
 def build_graph(records):
     """
-    Build the JSON-LD @graph from records.
+    Build the JSON-LD @graph from records using the entry template.
 
     Each record produces:
-      - 1 observable:File entry node
-          └── observable:FileFacet    (fileName — join key for IOI-012)
+      - 1 observable:File entry node (from template)
+          └── observable:FileFacet    (fileName/filePath — join key for IOI-012)
           └── ioi-ext:OfficeXMLFacet  (embedded XML metadata — detection evidence)
       - 1 uco-action:InvestigativeAction linking source → entry
 
     Plus 1 shared source file node.
     """
+    entry_snippet = load_template_snippets()
     graph = []
 
     source_uuid = generate_uuid()
@@ -176,37 +200,32 @@ def build_graph(records):
         xml_created     = sanitize_timestamp(rec.get('xml_created'))
         xml_modified    = sanitize_timestamp(rec.get('xml_modified'))
 
-        entry_node = {
-            '@id':   entry_id,
-            '@type': 'observable:File',
-            'core:hasFacet': [
-                {
-                    '@id':                          'kb:office_xml-file-facet--%s' % entry_uuid,
-                    '@type':                        'observable:FileFacet',
-                    'observable:fileName':           fname,
-                    'observable:filePath':           fpath,
-                    'observable:extension':          fext,
-                    'observable:sizeInBytes': {
-                        '@type':  'xsd:long',
-                        '@value': fsize
-                    },
-                },
-                {
-                    '@id':                    'kb:office_xml-ext-facet--%s' % entry_uuid,
-                    '@type':                  'ioi-ext:OfficeXMLFacet',
-                    'ioi-ext:dcCreator':        xml_creator,
-                    'ioi-ext:cpLastModifiedBy': xml_last_mod_by,
-                    'ioi-ext:dctermsCreated': {
-                        '@type':  'xsd:dateTime',
-                        '@value': xml_created
-                    },
-                    'ioi-ext:dctermsModified': {
-                        '@type':  'xsd:dateTime',
-                        '@value': xml_modified
-                    },
-                }
-            ]
+        replacements = {
+            '{ENTRY_UUID}':       entry_uuid,
+            '{FILE_NAME}':        fname,
+            '{FILE_PATH}':        fpath,
+            '{EXTENSION}':        fext,
+            '{FILE_SIZE}':        fsize,
+            '{DC_CREATOR}':       xml_creator,
+            '{LAST_MODIFIED_BY}': xml_last_mod_by,
+            '{DCTERMS_CREATED}':  xml_created,
+            '{DCTERMS_MODIFIED}': xml_modified,
+            # MFT timestamps not available in office graph — default
+            '{MFT_SI_CREATED}':        DEFAULT_TIMESTAMP,
+            '{MFT_SI_MODIFIED}':       DEFAULT_TIMESTAMP,
+            '{MFT_SI_ACCESSED}':       DEFAULT_TIMESTAMP,
+            '{MFT_SI_RECORD_CHANGE}':  DEFAULT_TIMESTAMP,
+            '{MFT_ENTRY_NUMBER}':      '0',
+            '{MFT_PARENT_ENTRY_NUMBER}': '0',
+            '{MFT_FN_CREATED}':        DEFAULT_TIMESTAMP,
+            '{MFT_FN_MODIFIED}':       DEFAULT_TIMESTAMP,
+            '{MFT_FN_ACCESSED}':       DEFAULT_TIMESTAMP,
+            '{MFT_FN_RECORD_CHANGE}':  DEFAULT_TIMESTAMP,
         }
+
+        entry_node = copy.deepcopy(entry_snippet)[0]
+        entry_node = _replace_placeholders(entry_node, replacements)
+        entry_node['@id'] = entry_id
         graph.append(entry_node)
 
         action_uuid = generate_uuid()
