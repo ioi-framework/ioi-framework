@@ -62,10 +62,9 @@ Download Docker Desktop from https://www.docker.com/products/docker-desktop/ and
 ### 2. Start Virtuoso
 
 ```bash
-docker run --name vos -d \
-  -e DBA_PASSWORD=dba \
-  -p 8890:8890 -p 1111:1111 \
-  openlink/virtuoso-opensource-7:latest
+docker run --name vos -d   -e DBA_PASSWORD=dba   -p 8890:8890 -p 1111:1111   openlink/virtuoso-opensource-7:latest
+
+docker exec vos isql 1111 dba dba "exec=select 1;"
 ```
 
 Verify it started:
@@ -105,9 +104,8 @@ You should see `Done.` for each file. If you see an access denied error, make su
 ### 5. Run a detection rule
 
 ```bash
-curl -s "http://localhost:8890/sparql" \
-  --data-urlencode "query@RULES/structural/IOI-004_vss_traces_missing.rq" \
-  -H "Accept: application/sparql-results+json"
+docker cp RULES/structural/IOI-004_vss_traces_missing.rq vos:/database/rule.rq
+docker exec vos bash -lc "printf 'SPARQL\n'; sed '/^#/d' /database/rule.rq; printf '\n;'"   | docker exec -i vos isql 1111 dba dba
 ```
 
 Expected: 2 results for the AF-004 test data.
