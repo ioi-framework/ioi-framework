@@ -1,0 +1,13 @@
+[
+  {
+    "@id": "kb:url--{URL_UUID}",
+    "@type": "observable:URL",
+    "core:hasFacet": [
+      {
+        "@id": "kb:url-facet--{URL_UUID}",
+        "@type": "observable:URLFacet",
+        "observable:fullValue": "{FULL_URL}"
+      }
+    ]
+  }
+]

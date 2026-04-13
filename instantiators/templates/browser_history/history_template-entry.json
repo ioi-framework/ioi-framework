@@ -1,0 +1,28 @@
+[
+  {
+    "@id": "kb:url-history-entry--{ENTRY_UUID}",
+    "@type": "observable:URLHistoryEntry",
+    "core:hasFacet": [
+      {
+        "@id": "kb:url-history-facet--{ENTRY_UUID}",
+        "@type": "observable:URLHistoryFacet",
+        "observable:url": {
+          "@id": "kb:url--{URL_UUID}"
+        },
+        "observable:pageTitle": "{TITLE}",
+        "observable:visitCount": {
+          "@type": "xsd:nonNegativeInteger",
+          "@value": "{VISIT_COUNT}"
+        },
+        "observable:manuallyEnteredCount": {
+          "@type": "xsd:nonNegativeInteger",
+          "@value": "{TYPED_COUNT}"
+        },
+        "observable:lastVisit": {
+          "@type": "xsd:dateTime",
+          "@value": "{LAST_VISIT_DATETIME}"
+        }
+      }
+    ]
+  }
+]

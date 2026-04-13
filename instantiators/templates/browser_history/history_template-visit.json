@@ -1,0 +1,27 @@
+[
+  {
+    "@id": "kb:url-visit--{VISIT_UUID}",
+    "@type": "observable:URLVisit",
+    "core:hasFacet": [
+      {
+        "@id": "kb:url-visit-facet--{VISIT_UUID}",
+        "@type": "observable:URLVisitFacet",
+        "observable:url": {
+          "@id": "kb:url--{URL_UUID}"
+        },
+        "observable:visitTime": {
+          "@type": "xsd:dateTime",
+          "@value": "{VISIT_DATETIME}"
+        },
+        "observable:visitDuration": {
+          "@type": "xsd:duration",
+          "@value": "PT{VISIT_DURATION_SECONDS}S"
+        },
+        "observable:urlTransitionType": "{TRANSITION}",
+        "observable:fromURLVisit": {
+          "@id": "kb:url-visit--{FROM_VISIT_UUID}"
+        }
+      }
+    ]
+  }
+]

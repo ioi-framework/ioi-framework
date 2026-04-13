@@ -1,33 +1,102 @@
 #!/usr/bin/env python3
 """
-Chrome History Template Filler
-Fills CASE/UCO template from Chrome History SQLite export
-Uses standard CASE/UCO classes: URLHistoryEntry, URLHistoryFacet, URLVisit, URLVisitFacet
+Browser History Instantiator - CASE/UCO JSON-LD generator for Chrome History.
+
+Input contract (used by the Autopsy plugin):
+  {
+    "urls": [
+      {
+        "id": 1,
+        "url": "https://example.com",
+        "title": "Example",
+        "visit_count": 3,
+        "typed_count": 1,
+        "last_visit_datetime": 13300000000000000
+      }
+    ],
+    "visits": [
+      {
+        "id": 10,
+        "url": 1,
+        "visit_datetime": 13300000000000000,
+        "visit_duration": 2000000,
+        "transition": 1,
+        "from_visit": 0
+      }
+    ]
+  }
+
+CLI (standard 2-argument contract - callable by MapperRunner):
+  python3 history_instantiator.py <history.json> <output.jsonld>
 """
 
+import argparse
+import copy
 import json
 import uuid
 from datetime import datetime, timedelta
+from pathlib import Path
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
+
+
+def sanitize_int(value, default="0"):
+    if value is None or str(value).strip() == "":
+        return default
+    try:
+        return str(int(float(str(value))))
+    except (TypeError, ValueError):
+        return default
+
 
 def webkit_to_datetime(webkit_time):
     """Convert Chrome WebKit timestamp to ISO 8601 datetime."""
     if webkit_time is None:
         return None
-    # WebKit epoch: January 1, 1601
-    # Microseconds since WebKit epoch
     webkit_epoch = datetime(1601, 1, 1)
-    return (webkit_epoch + timedelta(microseconds=webkit_time)).isoformat() + 'Z'
+    return (webkit_epoch + timedelta(microseconds=int(webkit_time))).isoformat() + "Z"
+
+
+def sanitize_timestamp(value, default=""):
+    """Normalize History timestamps from WebKit or string input."""
+    if value is None or str(value).strip() == "":
+        return default
+
+    if isinstance(value, (int, float)):
+        try:
+            return webkit_to_datetime(value)
+        except Exception:
+            return default
+
+    value_str = str(value).strip()
+    if not value_str or value_str == "0":
+        return default
+
+    if "T" in value_str:
+        return value_str if value_str.endswith("Z") else value_str + "Z"
+    if " " in value_str:
+        return value_str.replace(" ", "T") + "Z"
+
+    try:
+        return webkit_to_datetime(int(float(value_str)))
+    except Exception:
+        return default
+
 
 def microseconds_to_seconds(microseconds):
-    """Convert microseconds to seconds for duration."""
-    if microseconds is None:
+    """Convert microseconds to seconds for xsd:duration."""
+    if microseconds is None or str(microseconds).strip() == "":
         return "0"
-    return str(microseconds / 1000000.0)
+    try:
+        return str(float(microseconds) / 1000000.0)
+    except (TypeError, ValueError):
+        return "0"
+
 
 def transition_to_string(transition_value):
     """Convert Chrome transition type integer to string."""
-    # Chrome transition types
-    # Since UCO URLTransitionTypeVocab is empty, using plain strings
     transitions = {
         0: "link",
         1: "typed",
@@ -39,182 +108,149 @@ def transition_to_string(transition_value):
         7: "form_submit",
         8: "reload",
         9: "keyword",
-        10: "keyword_generated"
+        10: "keyword_generated",
     }
-
-    # Extract core transition type (lower 8 bits)
-    core_type = transition_value & 0xFF if transition_value else 0
+    try:
+        core_type = int(transition_value) & 0xFF
+    except (TypeError, ValueError):
+        core_type = 0
     return transitions.get(core_type, "link")
 
-def fill_template_from_json(json_file_path, output_file_path):
-    """Fill template from Chrome History JSON data."""
 
-    print(f"Loading Chrome History data from {json_file_path}...")
-    with open(json_file_path, 'r', encoding='utf-8') as f:
+def _replace_placeholders(obj, replacements):
+    if isinstance(obj, dict):
+        return {k: _replace_placeholders(v, replacements) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_replace_placeholders(item, replacements) for item in obj]
+    if isinstance(obj, str):
+        for placeholder, value in replacements.items():
+            obj = obj.replace(placeholder, value)
+        return obj
+    return obj
+
+
+def load_template_snippets():
+    """Load history template snippets."""
+    base_path = Path(__file__).parent / "templates" / "browser_history"
+
+    with open(base_path / "history_template_base.json", "r", encoding="utf-8") as f:
+        base_template = json.load(f)
+
+    with open(base_path / "history_template-url_resource.json", "r", encoding="utf-8") as f:
+        url_snippet = json.load(f)
+
+    with open(base_path / "history_template-entry.json", "r", encoding="utf-8") as f:
+        entry_snippet = json.load(f)
+
+    with open(base_path / "history_template-visit.json", "r", encoding="utf-8") as f:
+        visit_snippet = json.load(f)
+
+    return base_template, url_snippet, entry_snippet, visit_snippet
+
+
+def fill_template_from_json(json_file_path, output_file_path):
+    """Fill templates from Chrome History JSON data."""
+    print("Loading Chrome History data from %s..." % json_file_path)
+    with open(json_file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    urls_data = data.get('urls', [])
-    visits_data = data.get('visits', [])
+    urls_data = data.get("urls", [])
+    visits_data = data.get("visits", [])
 
-    print(f"Found {len(urls_data)} URLs and {len(visits_data)} visits")
+    print("Found %d URLs and %d visits" % (len(urls_data), len(visits_data)))
 
+    base_template, url_snippet, entry_snippet, visit_snippet = load_template_snippets()
     graph = []
 
-    # Track ID mappings (database ID -> generated UUID)
-    url_id_map = {}  # Maps database URL ID to observable:URL @id
-    visit_id_map = {}
+    url_uuid_map = {}
+    visit_uuid_map = {}
 
-    # Process URLs - Create both observable:URL and URLHistoryEntry
     print("Processing URLs...")
     for url_entry in urls_data:
-        url_id = url_entry.get('id')
+        url_id = url_entry.get("id")
         if url_id is None:
             continue
 
-        # Create observable:URL object (the actual URL resource)
-        url_resource_id = f"kb:url--{uuid.uuid4()}"
-        url_id_map[url_id] = url_resource_id
+        url_uuid = generate_uuid()
+        entry_uuid = generate_uuid()
+        url_uuid_map[url_id] = url_uuid
 
-        url_resource = {
-            "@id": url_resource_id,
-            "@type": "observable:URL",
-            "uco-core:hasFacet": [
-                {
-                    "@id": f"kb:url-facet--{uuid.uuid4()}",
-                    "@type": "observable:URLFacet",
-                    "observable:fullValue": url_entry.get('url', '')
-                }
-            ]
-        }
-        graph.append(url_resource)
-
-        # Create URLHistoryEntry (contains metadata about URL visits)
-        history_entry_id = f"kb:url-history-entry--{uuid.uuid4()}"
-        url_obj = {
-            "@id": history_entry_id,
-            "@type": "observable:URLHistoryEntry",
-            "uco-core:hasFacet": [
-                {
-                    "@id": f"kb:url-history-facet--{uuid.uuid4()}",
-                    "@type": "observable:URLHistoryFacet",
-                    "observable:url": {
-                        "@id": url_resource_id
-                    },
-                    "observable:pageTitle": url_entry.get('title', ''),
-                    "observable:visitCount": {
-                        "@type": "xsd:nonNegativeInteger",
-                        "@value": str(url_entry.get('visit_count', 0))
-                    },
-                    "observable:manuallyEnteredCount": {
-                        "@type": "xsd:nonNegativeInteger",
-                        "@value": str(url_entry.get('typed_count', 0))
-                    }
-                }
-            ]
+        replacements = {
+            "{URL_UUID}": url_uuid,
+            "{ENTRY_UUID}": entry_uuid,
+            "{FULL_URL}": str(url_entry.get("url", "") or ""),
+            "{TITLE}": str(url_entry.get("title", "") or ""),
+            "{VISIT_COUNT}": sanitize_int(url_entry.get("visit_count", 0)),
+            "{TYPED_COUNT}": sanitize_int(url_entry.get("typed_count", 0)),
+            "{LAST_VISIT_DATETIME}": sanitize_timestamp(url_entry.get("last_visit_datetime"), ""),
         }
 
-        # Add lastVisit if available
-        last_visit = url_entry.get('last_visit_datetime')
-        if last_visit:
-            url_obj["uco-core:hasFacet"][0]["observable:lastVisit"] = {
-                "@type": "xsd:dateTime",
-                "@value": webkit_to_datetime(last_visit) if isinstance(last_visit, int) else last_visit.replace(' ', 'T') + 'Z'
-            }
+        url_node = _replace_placeholders(copy.deepcopy(url_snippet[0]), replacements)
+        entry_node = _replace_placeholders(copy.deepcopy(entry_snippet[0]), replacements)
 
-        graph.append(url_obj)
+        if not replacements["{LAST_VISIT_DATETIME}"]:
+            entry_facet = entry_node["core:hasFacet"][0]
+            entry_facet.pop("observable:lastVisit", None)
 
-    # Process Visits (URLVisit)
+        graph.append(url_node)
+        graph.append(entry_node)
+
+    for visit_entry in visits_data:
+        visit_id = visit_entry.get("id")
+        if visit_id is not None:
+            visit_uuid_map[visit_id] = generate_uuid()
+
     print("Processing visits...")
     for visit_entry in visits_data:
-        visit_id = visit_entry.get('id')
-        url_id = visit_entry.get('url')
+        visit_id = visit_entry.get("id")
+        url_id = visit_entry.get("url")
 
-        if visit_id is None or url_id is None:
+        if visit_id is None:
             continue
 
-        generated_visit_id = f"kb:url-visit--{uuid.uuid4()}"
-        visit_id_map[visit_id] = generated_visit_id
-
-        visit_obj = {
-            "@id": generated_visit_id,
-            "@type": "observable:URLVisit",
-            "uco-core:hasFacet": [
-                {
-                    "@id": f"kb:url-visit-facet--{uuid.uuid4()}",
-                    "@type": "observable:URLVisitFacet"
-                }
-            ]
+        replacements = {
+            "{VISIT_UUID}": visit_uuid_map.get(visit_id, generate_uuid()),
+            "{URL_UUID}": url_uuid_map.get(url_id, ""),
+            "{VISIT_DATETIME}": sanitize_timestamp(visit_entry.get("visit_datetime"), ""),
+            "{VISIT_DURATION_SECONDS}": microseconds_to_seconds(visit_entry.get("visit_duration")),
+            "{TRANSITION}": transition_to_string(visit_entry.get("transition")),
+            "{FROM_VISIT_UUID}": visit_uuid_map.get(visit_entry.get("from_visit"), ""),
         }
 
-        facet = visit_obj["uco-core:hasFacet"][0]
+        visit_node = _replace_placeholders(copy.deepcopy(visit_snippet[0]), replacements)
+        visit_facet = visit_node["core:hasFacet"][0]
 
-        # Visit time
-        visit_datetime = visit_entry.get('visit_datetime')
-        if visit_datetime:
-            facet["observable:visitTime"] = {
-                "@type": "xsd:dateTime",
-                "@value": webkit_to_datetime(visit_datetime) if isinstance(visit_datetime, int) else visit_datetime.replace(' ', 'T') + 'Z'
-            }
+        if not replacements["{URL_UUID}"]:
+            visit_facet.pop("observable:url", None)
+        if not replacements["{VISIT_DATETIME}"]:
+            visit_facet.pop("observable:visitTime", None)
+        if not replacements["{FROM_VISIT_UUID}"] or not visit_entry.get("from_visit"):
+            visit_facet.pop("observable:fromURLVisit", None)
 
-        # Visit duration
-        visit_duration = visit_entry.get('visit_duration')
-        if visit_duration is not None:
-            duration_seconds = microseconds_to_seconds(visit_duration)
-            facet["observable:visitDuration"] = {
-                "@type": "xsd:duration",
-                "@value": f"PT{duration_seconds}S"
-            }
+        graph.append(visit_node)
 
-        # Transition type (plain string - UCO vocab is empty)
-        transition = visit_entry.get('transition')
-        if transition is not None:
-            facet["observable:urlTransitionType"] = transition_to_string(transition)
+    base_template["@graph"] = graph
 
-        # Reference to URL entry (using mapped UUID)
-        if url_id in url_id_map:
-            facet["observable:url"] = {
-                "@id": url_id_map[url_id]
-            }
+    print("Writing output to %s..." % output_file_path)
+    with open(output_file_path, "w", encoding="utf-8") as f:
+        json.dump(base_template, f, indent=2, ensure_ascii=False)
 
-        # From visit (referrer) - using mapped UUID
-        from_visit = visit_entry.get('from_visit')
-        if from_visit and from_visit != 0 and from_visit in visit_id_map:
-            facet["observable:fromURLVisit"] = {
-                "@id": visit_id_map[from_visit]
-            }
+    print("Successfully generated %d objects" % len(graph))
+    print("  - %d URL resources" % len(urls_data))
+    print("  - %d URL history entries" % len(urls_data))
+    print("  - %d URL visits" % len(visits_data))
 
-        graph.append(visit_obj)
 
-    # Create final JSON-LD structure
-    output = {
-        "@context": {
-            "@vocab": "https://ontology.unifiedcyberontology.org/uco/observable/",
-            "uco-core": "https://ontology.unifiedcyberontology.org/uco/core/",
-            "observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
-            "vocabulary": "https://ontology.unifiedcyberontology.org/uco/vocabulary/",
-            "xsd": "http://www.w3.org/2001/XMLSchema#",
-            "kb": "https://ioi-framework.github.io/kb/"
-        },
-        "@graph": graph
-    }
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate CASE/UCO JSON-LD from Chrome History export JSON."
+    )
+    parser.add_argument("input_file", help="History export JSON containing urls[] and visits[]")
+    parser.add_argument("output_file", help="Output JSON-LD path")
+    args = parser.parse_args()
 
-    # Write output
-    print(f"Writing output to {output_file_path}...")
-    with open(output_file_path, 'w', encoding='utf-8') as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
+    fill_template_from_json(args.input_file, args.output_file)
 
-    print(f"Successfully generated {len(graph)} objects")
-    print(f"  - {len(urls_data)} URL history entries")
-    print(f"  - {len(visits_data)} URL visits")
 
 if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) > 1:
-        input_file = sys.argv[1]
-        output_file = sys.argv[2] if len(sys.argv) > 2 else "history_filled.jsonld"
-    else:
-        input_file = "sqlite_exact.json"
-        output_file = "history_filled.jsonld"
-
-    fill_template_from_json(input_file, output_file)
+    main()

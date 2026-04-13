@@ -9,12 +9,26 @@
   },
   "@graph": [
     {
-      "@id": "kb:url-history-entry--{URL_ID}",
+      "@id": "kb:url--{URL_UUID}",
+      "@type": "observable:URL",
+      "core:hasFacet": [
+        {
+          "@id": "kb:url-facet--{URL_UUID}",
+          "@type": "observable:URLFacet",
+          "observable:fullValue": "{FULL_URL}"
+        }
+      ]
+    },
+    {
+      "@id": "kb:url-history-entry--{ENTRY_UUID}",
       "@type": "observable:URLHistoryEntry",
       "core:hasFacet": [
         {
+          "@id": "kb:url-history-facet--{ENTRY_UUID}",
           "@type": "observable:URLHistoryFacet",
-          "observable:url": "{URL}",
+          "observable:url": {
+            "@id": "kb:url--{URL_UUID}"
+          },
           "observable:pageTitle": "{TITLE}",
           "observable:visitCount": {
             "@type": "xsd:nonNegativeInteger",
@@ -32,13 +46,14 @@
       ]
     },
     {
-      "@id": "kb:url-visit--{VISIT_ID}",
+      "@id": "kb:url-visit--{VISIT_UUID}",
       "@type": "observable:URLVisit",
       "core:hasFacet": [
         {
+          "@id": "kb:url-visit-facet--{VISIT_UUID}",
           "@type": "observable:URLVisitFacet",
           "observable:url": {
-            "@id": "kb:url-history-entry--{URL_FK}"
+            "@id": "kb:url--{URL_UUID}"
           },
           "observable:visitTime": {
             "@type": "xsd:dateTime",
@@ -48,12 +63,9 @@
             "@type": "xsd:duration",
             "@value": "PT{VISIT_DURATION_SECONDS}S"
           },
-          "observable:urlTransitionType": {
-            "@type": "xsd:string",
-            "@value": "{TRANSITION}"
-          },
+          "observable:urlTransitionType": "{TRANSITION}",
           "observable:fromURLVisit": {
-            "@id": "kb:url-visit--{FROM_VISIT}"
+            "@id": "kb:url-visit--{FROM_VISIT_UUID}"
           }
         }
       ]
