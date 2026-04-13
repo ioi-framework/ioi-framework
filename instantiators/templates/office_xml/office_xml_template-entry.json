@@ -75,7 +75,7 @@
                     "@type": "xsd:dateTime",
                     "@value": "{DCTERMS_MODIFIED}"
                 },
-                "ioi-ext:lastModifiedBy": "{LAST_MODIFIED_BY}",
+                "ioi-ext:cpLastModifiedBy": "{LAST_MODIFIED_BY}",
                 "ioi-ext:metadataSource": "docProps/core.xml"
             }
         ]

@@ -194,13 +194,13 @@ def build_graph(records):
                 {
                     '@id':                    'kb:office_xml-ext-facet--%s' % entry_uuid,
                     '@type':                  'ioi-ext:OfficeXMLFacet',
-                    'ioi-ext:creator':        xml_creator,
-                    'ioi-ext:lastModifiedBy': xml_last_mod_by,
-                    'ioi-ext:created': {
+                    'ioi-ext:dcCreator':        xml_creator,
+                    'ioi-ext:cpLastModifiedBy': xml_last_mod_by,
+                    'ioi-ext:dctermsCreated': {
                         '@type':  'xsd:dateTime',
                         '@value': xml_created
                     },
-                    'ioi-ext:modified': {
+                    'ioi-ext:dctermsModified': {
                         '@type':  'xsd:dateTime',
                         '@value': xml_modified
                     },
