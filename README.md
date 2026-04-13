@@ -53,53 +53,80 @@ and work as-is in the playground. Queries without `GRAPH` clauses return no resu
 
 ## Virtuoso quick start
 
-Full setup: https://ioi-framework.github.io/quickstart/
+Virtuoso is the triplestore that holds the knowledge graphs. It runs in Docker.
+
+### 1. Install Docker
+
+Download Docker Desktop from https://www.docker.com/products/docker-desktop/ and make sure it is running.
+
+### 2. Start Virtuoso
 
 ```bash
-docker pull openlink/virtuoso-opensource-7:latest
-docker run --name vos -d -e DBA_PASSWORD=dba \
+docker run --name vos -d \
+  -e DBA_PASSWORD=dba \
   -p 8890:8890 -p 1111:1111 \
   openlink/virtuoso-opensource-7:latest
 ```
 
-Convert JSON-LD to N-Triples and load:
+Verify it started:
+```bash
+docker ps | grep vos
+```
+
+You should see the `vos` container listed as running. You can also open http://localhost:8890 in a browser to confirm.
+
+### 3. Convert a test JSON-LD file to N-Triples
 
 ```bash
-# Convert (rdflib)
-python SCRIPTS/convert_to_ntriples.py CASES/AF-004/test/mft_test.jsonld mft.nt
-python SCRIPTS/convert_to_ntriples.py CASES/AF-004/test/usn_test.jsonld usn.nt
+python3 SCRIPTS/convert_to_ntriples.py CASES/AF-004/test/mft_test.jsonld mft.nt
+python3 SCRIPTS/convert_to_ntriples.py CASES/AF-004/test/usn_test.jsonld usn.nt
+```
 
-# Load into named graphs
-# Files must go to /usr/share/proj/ (DirsAllowed in virtuoso.ini)
+> **Note:** The script tries Node.js (`jsonld` package) first, then falls back to `rdflib`. If you don't have Node.js, install rdflib: `pip3 install rdflib`
+
+### 4. Load N-Triples into Virtuoso
+
+Virtuoso only reads files from directories listed in its config. The safe path is `/usr/share/proj/` inside the container. Copy your files there first, then load:
+
+```bash
+# Step 1 — copy files into the container
 docker cp mft.nt vos:/usr/share/proj/mft.nt
 docker cp usn.nt vos:/usr/share/proj/usn.nt
+
+# Step 2 — load into named graphs (paste this whole block as one command)
 docker exec -i vos isql 1111 dba dba <<'EOF'
 DB.DBA.TTLP_MT(file_to_string_output('/usr/share/proj/mft.nt'), '', 'https://ioi-framework.github.io/cases/AF-004/graphs/mft', 512);
 DB.DBA.TTLP_MT(file_to_string_output('/usr/share/proj/usn.nt'), '', 'https://ioi-framework.github.io/cases/AF-004/graphs/usn', 512);
 EOF
+```
 
-# Run IOI-004 via SPARQL HTTP endpoint — expect 2 rows
+You should see `Done.` for each file. If you see an access denied error, make sure you copied to `/usr/share/proj/` and not `/database/`.
+
+### 5. Run a detection rule
+
+```bash
 curl -s "http://localhost:8890/sparql" \
   --data-urlencode "query@RULES/structural/IOI-004_vss_traces_missing.rq" \
   -H "Accept: application/sparql-results+json"
 ```
 
+Expected: 2 results for the AF-004 test data.
+
 ---
 
 ## Running against your own data
 
-1. Parse artifacts with [Eric Zimmermann tools](https://ericzimmerman.github.io/)
-   (MFTECmd, EvtxECmd, LECmd, PECmd, Hindsight)
-2. Run the instantiator:
-   ```bash
-   python instantiators/mft_instantiator.py mft.csv output.jsonld
-   ```
-3. **Playground**: drag `output.jsonld` in → rule runs immediately.
-4. **Virtuoso**: convert to N-Triples → load into named graph → run the same rule.
+1. Parse your disk image artifacts with [Eric Zimmerman tools](https://ericzimmerman.github.io/)
+   — `MFTECmd` for `$MFT`, `LECmd` for `.lnk`, `EvtxECmd` for `.evtx`
 
-For an artifact not yet in `registry.json`, use the
-[IOI MCP Server](https://github.com/kismatkunwar89/ioi-mcp-server)
-to auto-generate the instantiator, templates, and registry entry from your CSV.
+2. Run the instantiator for your artifact type:
+   ```bash
+   python3 instantiators/mft_instantiator.py mft.csv output.jsonld
+   ```
+
+3. Choose how to run the detection rule:
+   - **Playground** (quick, no install): drag `output.jsonld` into `playground/index.html` → paste rule → Run
+   - **Virtuoso** (full scale): follow steps 3–5 above with your own files
 
 ---
 
