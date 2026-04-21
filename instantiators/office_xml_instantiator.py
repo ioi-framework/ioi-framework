@@ -2,7 +2,7 @@
 """
 Office XML Instantiator — CASE/UCO JSON-LD generator for Office timestomping detection.
 
-Accepts two input modes:
+Accepts three input modes:
 
   1. Merged JSON (Autopsy path — produced by ArtifactExporter._export_zip_xml):
        python3 office_xml_instantiator.py office_xml_merged.json output.jsonld
@@ -10,9 +10,12 @@ Accepts two input modes:
   2. Raw .docx file (manual investigator path):
        python3 office_xml_instantiator.py report.docx output.jsonld
 
+  3. Unzipped Office package directory (manual investigator path):
+       python3 office_xml_instantiator.py report_docx_xml/ output.jsonld
+
 In both modes the output JSON-LD contains only:
   - ioi-ext:OfficeXMLFacet  (xml_creator, xml_created, xml_modified, xml_last_modified_by)
-  - observable:FileFacet     (fileName — join key for IOI-012 SPARQL rule)
+  - observable:FileFacet     (fileName/filePath join keys for IOI-012 SPARQL rule)
 
 Filesystem timestamps ($SI) are NOT included here — they come from the MFT graph
 produced by mft_instantiator.py. IOI-012 joins both graphs on fileName.
@@ -30,6 +33,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 DEFAULT_TIMESTAMP = '1970-01-01T00:00:00Z'
+OFFICE_EXTENSIONS = ('.docx', '.xlsx', '.pptx', '.docm', '.xlsm', '.pptm')
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
@@ -56,6 +60,53 @@ def sanitize_int(value, default='0'):
         return str(int(float(str(value))))
     except (ValueError, TypeError):
         return default
+
+
+def _directory_size(path):
+    """Return cumulative size in bytes for all files under a directory."""
+    total = 0
+    for child in path.rglob('*'):
+        if child.is_file():
+            total += child.stat().st_size
+    return total
+
+
+def _infer_filename_from_unzipped_dir(path):
+    """Infer the original Office filename from an extracted package directory name."""
+    name = path.name
+    if name.endswith('(xml)'):
+        return name[:-5]
+
+    suffix_map = {
+        '_docx_xml': '.docx',
+        '_xlsx_xml': '.xlsx',
+        '_pptx_xml': '.pptx',
+        '_docm_xml': '.docm',
+        '_xlsm_xml': '.xlsm',
+        '_pptm_xml': '.pptm',
+    }
+    lowered = name.lower()
+    for suffix, ext in suffix_map.items():
+        if lowered.endswith(suffix):
+            return name[:-len(suffix)] + ext
+    return None
+
+
+def _default_output_filepath(path, inferred_filename=None):
+    """Default to the evidence-like file path without requiring manual input."""
+    if inferred_filename:
+        return str((path.parent / inferred_filename).resolve())
+    return str(path.resolve())
+
+
+def _resolve_sibling_office_file(path, inferred_filename):
+    """Reuse sibling Office file metadata when the extracted folder sits next to the source file."""
+    if not inferred_filename:
+        return None
+    candidate = path.parent / inferred_filename
+    if candidate.exists() and candidate.is_file():
+        return candidate
+    return None
 
 
 # ── Input loaders ────────────────────────────────────────────────────────────
@@ -133,6 +184,52 @@ def extract_from_docx(input_path, override_filepath=None):
     return [record]
 
 
+def extract_from_unzipped_dir(input_path, override_filepath=None):
+    """
+    Manual investigator path — extract XML metadata from an unzipped Office package folder.
+
+    Supports directories such as:
+      - password.docx(xml)/
+      - af012_password_docx_xml/
+
+    If a sibling Office file is present next to the extracted directory, reuse its
+    filename, resolved path, and file size so the emitted JSON-LD matches the raw
+    .docx branch as closely as possible without changing current behavior.
+    """
+    p = Path(input_path)
+    core_xml_path = p / 'docProps' / 'core.xml'
+    inferred_filename = _infer_filename_from_unzipped_dir(p)
+    sibling_office_file = _resolve_sibling_office_file(p, inferred_filename)
+
+    if sibling_office_file is not None:
+        filename = sibling_office_file.name
+        extension = sibling_office_file.suffix.lstrip('.')
+        size = sibling_office_file.stat().st_size
+        default_filepath = str(sibling_office_file.resolve())
+    else:
+        filename = inferred_filename or p.name
+        extension = Path(filename).suffix.lstrip('.')
+        size = _directory_size(p)
+        default_filepath = _default_output_filepath(p, inferred_filename=filename if extension else None)
+
+    record = {
+        'filename': filename,
+        'filepath': override_filepath or default_filepath,
+        'extension': extension,
+        'size': size,
+    }
+
+    if core_xml_path.exists():
+        xml_bytes = core_xml_path.read_bytes()
+        record.update(_parse_core_xml(xml_bytes))
+        print('  core.xml extracted and parsed from %s' % core_xml_path)
+    else:
+        print('  Warning: docProps/core.xml not found in %s' % p)
+        record.update({'xml_creator': '', 'xml_last_modified_by': '', 'xml_created': '', 'xml_modified': ''})
+
+    return [record]
+
+
 # ── Template loader ──────────────────────────────────────────────────────────
 
 def load_template_snippets():
@@ -163,7 +260,7 @@ def build_graph(records):
 
     Each record produces:
       - 1 observable:File entry node (from template)
-          └── observable:FileFacet    (fileName/filePath — join key for IOI-012)
+          └── observable:FileFacet    (fileName/filePath — join keys for IOI-012)
           └── ioi-ext:OfficeXMLFacet  (embedded XML metadata — detection evidence)
       - 1 uco-action:InvestigativeAction linking source → entry
 
@@ -249,12 +346,14 @@ def fill_template_from_data(input_path, output_path, override_filepath=None):
     p = Path(input_path)
     ext = p.suffix.lower()
 
-    if ext == '.json':
+    if p.is_dir():
+        records = extract_from_unzipped_dir(input_path, override_filepath=override_filepath)
+    elif ext == '.json':
         records = load_from_merged_json(input_path)
-    elif ext in ('.docx', '.xlsx', '.pptx', '.docm', '.xlsm', '.pptm'):
+    elif ext in OFFICE_EXTENSIONS:
         records = extract_from_docx(input_path, override_filepath=override_filepath)
     else:
-        # Fallback: try JSON first, then docx
+        # Fallback: try JSON first, then Office ZIP/manual path
         try:
             records = load_from_merged_json(input_path)
         except (json.JSONDecodeError, ValueError):
@@ -289,14 +388,14 @@ def fill_template_from_data(input_path, output_path, override_filepath=None):
 def main():
     parser = argparse.ArgumentParser(
         description='Generate CASE/UCO JSON-LD for Office XML timestomping detection.\n'
-                    'Input can be a merged JSON (Autopsy path) or a .docx file (manual path).')
-    parser.add_argument('input',  help='Merged JSON from ArtifactExporter OR path to .docx file')
+                    'Input can be a merged JSON (Autopsy path), an Office document, or an extracted Office package directory.')
+    parser.add_argument('input',  help='Merged JSON from ArtifactExporter, path to an Office file, or path to an extracted Office package directory')
     parser.add_argument('output', help='Output JSON-LD file')
     parser.add_argument('--filepath', default=None,
-                        help='(Manual mode only) Original file path as it appears in the MFT '
+                        help='(Manual file/folder mode only) Original file path as it appears in the MFT '
                              '(e.g. /Users/ktams/Desktop/Confidential/password.docx). '
                              'Must match MFT graph filePath for IOI-012 join to work. '
-                             'If omitted, you will be prompted interactively.')
+                             'If omitted, .docx input prompts interactively and extracted folders infer a default path automatically.')
     args = parser.parse_args()
     fill_template_from_data(args.input, args.output, override_filepath=args.filepath)
 
