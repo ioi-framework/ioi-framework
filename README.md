@@ -114,6 +114,8 @@ Expected: 2 results for the AF-004 test data.
 
 ## Running against your own data
 
+> **Want to reproduce the published cases directly?** Download a per-case reproducibility bundle from [Artifacts & Datasets](https://ioi-framework.github.io/artifacts/) and then follow the steps in [Executing Rules](https://ioi-framework.github.io/executerules/). These bundles include the raw artifacts and parser outputs needed to reproduce each case.
+
 1. Parse your disk image artifacts with [Eric Zimmerman tools](https://ericzimmerman.github.io/)
    — `MFTECmd` for `$MFT`, `LECmd` for `.lnk`, `EvtxECmd` for `.evtx`
 
