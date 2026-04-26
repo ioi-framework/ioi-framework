@@ -8,6 +8,16 @@
       "full_name": "$MFT (Master File Table)",
       "parser_tool": "MFTECmd",
       "input_format": "CSV",
+      "graph_segment": "mft",
+      "export_strategy": "binary_tool",
+      "file_patterns": [
+        "$MFT"
+      ],
+      "tool_key": "MFTECMD_PATH",
+      "tool_output_flag": "--csv",
+      "tool_output_ext": ".csv",
+      "tool_output_format": "csv",
+      "cleanup_raw": true,
       "facet": "ioi-ext:MftFacet",
       "instantiator": "instantiators/mft_instantiator.py",
       "template_dir": "instantiators/templates/mft/",
@@ -78,6 +88,20 @@
       "full_name": "$UsnJrnl:$J (USN Change Journal)",
       "parser_tool": "MFTECmd",
       "input_format": "CSV",
+      "graph_segment": "usn",
+      "export_strategy": "binary_tool",
+      "file_patterns": [
+        "$UsnJrnl:$J"
+      ],
+      "fallback_patterns": [
+        "$J",
+        "$UsnJrnl"
+      ],
+      "tool_key": "MFTECMD_PATH",
+      "tool_output_flag": "--csv",
+      "tool_output_ext": ".csv",
+      "tool_output_format": "csv",
+      "cleanup_raw": true,
       "facet": "ioi-ext:UsnFacet",
       "instantiator": "instantiators/usn_instantiator.py",
       "template_dir": "instantiators/templates/usn/",
@@ -122,6 +146,17 @@
       "full_name": "Windows Shell Link (.lnk)",
       "parser_tool": "LECmd",
       "input_format": "CSV",
+      "graph_segment": "lnk",
+      "export_strategy": "directory_tool",
+      "file_patterns": [
+        "%.lnk"
+      ],
+      "parent_path_filter": "Recent",
+      "tool_key": "LECMD_PATH",
+      "tool_output_flag": "--csv",
+      "tool_output_ext": ".csv",
+      "tool_output_format": "csv",
+      "max_files": 1000,
       "facet": "ioi-ext:LnkFacet",
       "instantiator": "instantiators/lnk_instantiator.py",
       "template_dir": "instantiators/templates/lnk/",
@@ -169,6 +204,19 @@
       "full_name": "Windows Event Log (.evtx)",
       "parser_tool": "EvtxECmd",
       "input_format": "CSV",
+      "graph_segment": "security",
+      "graph_segment_aliases": [
+        "evtx"
+      ],
+      "export_strategy": "binary_tool",
+      "file_patterns": [
+        "Security.evtx"
+      ],
+      "tool_key": "EVTXECMD_PATH",
+      "tool_output_flag": "--json",
+      "tool_output_ext": ".jsonl",
+      "tool_output_format": "jsonl",
+      "cleanup_raw": true,
       "facet": "ioi-ext:EventLogFacet",
       "instantiator": "instantiators/evtx_instantiator.py",
       "template_dir": "instantiators/templates/evtx/",
@@ -206,6 +254,14 @@
       "full_name": "Chrome / Browser History SQLite",
       "parser_tool": "Hindsight",
       "input_format": "JSON",
+      "graph_segment": "history",
+      "export_strategy": "sqlite",
+      "file_patterns": [
+        "History"
+      ],
+      "parent_path_filter": "Chrome",
+      "tool_output_format": "json",
+      "cleanup_raw": true,
       "facet": "ioi-ext:BrowserHistoryFacet",
       "instantiator": "instantiators/history_instantiator.py",
       "template_dir": "instantiators/templates/browser_history/",
@@ -243,6 +299,18 @@
       "full_name": "Office Open XML Core Properties (docx/xlsx/pptx)",
       "parser_tool": "python-docx / manual",
       "input_format": "JSON",
+      "graph_segment": "office",
+      "graph_segment_aliases": [
+        "office_xml"
+      ],
+      "export_strategy": "zip_xml",
+      "file_patterns": [
+        "%.docx",
+        "%.xlsx",
+        "%.pptx"
+      ],
+      "tool_output_format": "json",
+      "cleanup_raw": true,
       "facet": "ioi-ext:OfficeXMLFacet",
       "instantiator": "instantiators/office_xml_instantiator.py",
       "template_dir": "instantiators/templates/office_xml/",
