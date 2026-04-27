@@ -6,14 +6,15 @@
 # invariant: Security event log entries exist AND USN journal shows clearing before those events
 # artifacts: Security.evtx, $UsnJrnl
 # added:     2025-10-01
-# changed:   (none)
+# changed:   1.0→1.1: rename misleading ?file_name result column to ?source_name;
+#                     EVTX branch now reports the event-log source, while USN branch reports the file name
 #
 PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT ?event_type ?time ?file_name ?update_reasons ?seed_uri ?seed_graph
+SELECT ?event_type ?time ?source_name ?update_reasons ?seed_uri ?seed_graph
 WHERE {
   {
     GRAPH <https://ioi-framework.github.io/cases/AF-007/graphs/security> {
@@ -26,7 +27,7 @@ WHERE {
       ?custom_facet a ioi-ext:EventLogFacet ;
                     ioi-ext:channel "Security" .
       BIND("Event 1102 - Log Cleared" AS ?event_type)
-      BIND(?text AS ?file_name)
+      BIND("Security Event Log" AS ?source_name)
       BIND("" AS ?update_reasons)
       BIND(?event AS ?seed_uri)
       BIND("evtx" AS ?seed_graph)
@@ -45,7 +46,7 @@ WHERE {
       FILTER(CONTAINS(?filename, "Security"))
       FILTER(CONTAINS(?reasons, "DataTruncation"))
       BIND("USN DataTruncation" AS ?event_type)
-      BIND(?filename AS ?file_name)
+      BIND(?filename AS ?source_name)
       BIND(?reasons AS ?update_reasons)
       BIND(?file AS ?seed_uri)
       BIND("usn" AS ?seed_graph)
