@@ -11,14 +11,15 @@
 #            1.2→1.3: rename ioi-ext:created → ioi-ext:dctermsCreated (source-specific naming)
 #                     join on normalized filePath (forward-slash, absolute) to eliminate Cartesian product
 #                     GROUP BY + MIN(?mftSiCreated) as fallback dedupe for residual filename-only matches
+#            1.3→1.4: compare XML and MFT $SI created timestamps at minute precision
 #
 PREFIX core:       <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext:    <https://ioi-framework.github.io/ns/ioi-ext/>
 PREFIX xsd:        <http://www.w3.org/2001/XMLSchema#>
 
-# Detects: Office core.xml recorded a creation timestamp that is EARLIER than
-# the MFT $STANDARD_INFORMATION created0x10 for the same file.
+# Detects: Office core.xml recorded a creation timestamp that is earlier by at
+# least one minute than the MFT $STANDARD_INFORMATION created0x10 for the same file.
 # This indicates the document metadata was backdated after creation —
 # a timestamp manipulation anti-forensic technique.
 #
@@ -59,8 +60,11 @@ WHERE {
     FILTER(LCASE(STR(?mftFilePath)) = LCASE(STR(?filePath)))
   }
 
-  # Core detection: Office XML claims creation BEFORE the MFT entry was created
-  FILTER(xsd:dateTime(?xmlCreated) < xsd:dateTime(?mftSiCreated))
+  # Core detection: Office XML claims creation BEFORE the MFT entry was created.
+  # Compare at minute precision to avoid flagging normal sub-minute write skew.
+  BIND(SUBSTR(REPLACE(STR(?xmlCreated), "T", " "), 1, 16) AS ?xmlCreatedMinute)
+  BIND(SUBSTR(REPLACE(STR(?mftSiCreated), "T", " "), 1, 16) AS ?mftSiCreatedMinute)
+  FILTER(?xmlCreatedMinute < ?mftSiCreatedMinute)
 }
 GROUP BY ?officeEntry ?fileName ?filePath ?xmlCreated
 ORDER BY ?filePath
