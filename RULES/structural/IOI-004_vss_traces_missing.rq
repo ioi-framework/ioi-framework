@@ -21,6 +21,8 @@ PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
 # This rewrite avoids Virtuoso parser issues from chained OR/regex filters.
 # Apps_{GUID} names are intentionally excluded because Windows Search
 # ConstraintIndex churn can create non-VSS false positives.
+# Require the full VSS infrastructure triad so common SVI files such as
+# tracking.log and IndexerVolumeGuid do not pair with unrelated GUID churn.
 
 SELECT DISTINCT ?vss_infrastructure ?deleted_guid ?usn_evidence ?seed_uri ?seed_graph
 WHERE {
@@ -45,6 +47,9 @@ WHERE {
   }
 
   FILTER(BOUND(?vss_infrastructure))
+  FILTER(CONTAINS(STR(?vss_infrastructure), "tracking.log"))
+  FILTER(CONTAINS(STR(?vss_infrastructure), "IndexerVolumeGuid"))
+  FILTER(CONTAINS(STR(?vss_infrastructure), "_OnDiskSnapshotProp"))
 
   {
     FILTER NOT EXISTS {
