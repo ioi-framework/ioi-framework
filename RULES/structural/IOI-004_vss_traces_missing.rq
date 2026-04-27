@@ -17,8 +17,10 @@ PREFIX ioi-ext: <https://ioi-framework.github.io/ns/ioi-ext/>
 # Logic:
 # 1. VSS infrastructure files exist in MFT (System Volume Information)
 # 2. VSS GUID directories are missing from MFT
-# 3. USN Journal confirms matching VSS-style deletions
+# 3. USN Journal confirms matching bare GUID directory deletions
 # This rewrite avoids Virtuoso parser issues from chained OR/regex filters.
+# Apps_{GUID} names are intentionally excluded because Windows Search
+# ConstraintIndex churn can create non-VSS false positives.
 
 SELECT DISTINCT ?vss_infrastructure ?deleted_guid ?usn_evidence ?seed_uri ?seed_graph
 WHERE {
@@ -44,37 +46,6 @@ WHERE {
 
   FILTER(BOUND(?vss_infrastructure))
 
-  {
-    FILTER NOT EXISTS {
-      GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/mft> {
-        ?guid_entry a observable:File ;
-                    core:hasFacet ?guid_file_facet, ?guid_mft_facet .
-        ?guid_file_facet a observable:FileFacet ;
-                         observable:fileName ?guid_name .
-        ?guid_mft_facet a ioi-ext:MftFacet ;
-                        ioi-ext:parentPath ?guid_parent .
-        FILTER(CONTAINS(?guid_parent, "System Volume Information"))
-        FILTER(STRSTARTS(STR(?guid_name), "Apps_{"))
-      }
-    }
-
-    GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/usn> {
-      ?usn_file a observable:File ;
-                core:hasFacet ?usn_file_facet, ?usn_facet .
-      ?usn_file_facet a observable:FileFacet ;
-                      observable:fileName ?usn_filename .
-      ?usn_facet a ioi-ext:UsnFacet ;
-                 ioi-ext:updateReasons ?update_reasons .
-      FILTER(STRSTARTS(STR(?usn_filename), "Apps_{"))
-      VALUES ?reason_term { "FileDelete" "FileDeleteClose" "DataTruncation" }
-      FILTER(CONTAINS(?update_reasons, ?reason_term))
-      BIND(?usn_filename AS ?deleted_guid)
-      BIND(?update_reasons AS ?usn_evidence)
-      BIND(?usn_file AS ?seed_uri)
-      BIND("usn" AS ?seed_graph)
-    }
-  }
-  UNION
   {
     FILTER NOT EXISTS {
       GRAPH <https://ioi-framework.github.io/cases/AF-004/graphs/mft> {
