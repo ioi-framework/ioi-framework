@@ -6,12 +6,19 @@
 <http://example.org/kb/mft-custom-facet--0002> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/core/Facet> .
 <http://example.org/kb/mft-custom-facet--0002> <https://ioi-framework.github.io/ns/ioi-ext/entryNumber> "102"^^<http://www.w3.org/2001/XMLSchema#integer> .
 <http://example.org/kb/mft-custom-facet--0002> <https://ioi-framework.github.io/ns/ioi-ext/parentPath> "C:\\System Volume Information" .
+<http://example.org/kb/mft-custom-facet--0003> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ioi-framework.github.io/ns/ioi-ext/MftFacet> .
+<http://example.org/kb/mft-custom-facet--0003> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/core/Facet> .
+<http://example.org/kb/mft-custom-facet--0003> <https://ioi-framework.github.io/ns/ioi-ext/entryNumber> "103"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://example.org/kb/mft-custom-facet--0003> <https://ioi-framework.github.io/ns/ioi-ext/parentPath> "C:\\System Volume Information" .
 <http://example.org/kb/mft-entry--0001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/File> .
 <http://example.org/kb/mft-entry--0001> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/mft-custom-facet--0001> .
 <http://example.org/kb/mft-entry--0001> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/mft-file-facet--0001> .
 <http://example.org/kb/mft-entry--0002> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/File> .
 <http://example.org/kb/mft-entry--0002> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/mft-custom-facet--0002> .
 <http://example.org/kb/mft-entry--0002> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/mft-file-facet--0002> .
+<http://example.org/kb/mft-entry--0003> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/File> .
+<http://example.org/kb/mft-entry--0003> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/mft-custom-facet--0003> .
+<http://example.org/kb/mft-entry--0003> <https://ontology.unifiedcyberontology.org/uco/core/hasFacet> <http://example.org/kb/mft-file-facet--0003> .
 <http://example.org/kb/mft-file-facet--0001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/FileFacet> .
 <http://example.org/kb/mft-file-facet--0001> <https://ontology.unifiedcyberontology.org/uco/observable/fileName> "tracking.log" .
 <http://example.org/kb/mft-file-facet--0001> <https://ontology.unifiedcyberontology.org/uco/observable/filePath> "C:\\System Volume Information\\tracking.log" .
@@ -20,3 +27,7 @@
 <http://example.org/kb/mft-file-facet--0002> <https://ontology.unifiedcyberontology.org/uco/observable/fileName> "IndexerVolumeGuid" .
 <http://example.org/kb/mft-file-facet--0002> <https://ontology.unifiedcyberontology.org/uco/observable/filePath> "C:\\System Volume Information\\IndexerVolumeGuid" .
 <http://example.org/kb/mft-file-facet--0002> <https://ontology.unifiedcyberontology.org/uco/observable/isDirectory> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://example.org/kb/mft-file-facet--0003> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://ontology.unifiedcyberontology.org/uco/observable/FileFacet> .
+<http://example.org/kb/mft-file-facet--0003> <https://ontology.unifiedcyberontology.org/uco/observable/fileName> "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}_OnDiskSnapshotProp" .
+<http://example.org/kb/mft-file-facet--0003> <https://ontology.unifiedcyberontology.org/uco/observable/filePath> "C:\\System Volume Information\\{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}_OnDiskSnapshotProp" .
+<http://example.org/kb/mft-file-facet--0003> <https://ontology.unifiedcyberontology.org/uco/observable/isDirectory> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
