@@ -1,5 +1,5 @@
 # rule_id:   IOI-011
-# version:   1.2
+# version:   1.3
 # status:    Validated
 # category:  temporal
 # title:     LNK Target Timestamp Inconsistent with MFT
@@ -7,6 +7,7 @@
 # artifacts: LNK, $MFT
 # added:     2025-10-01
 # changed:   1.1→1.2: restored WindowsLnkFacet to match validated AF-011 LNK graphs; compare $FN at second precision using portable SPARQL
+#            1.2→1.3: replace SUBSTR equality with STRSTARTS prefix match for Virtuoso-safe second precision comparison
 #
 PREFIX core: <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
@@ -40,10 +41,7 @@ WHERE {
               ioi-ext:created0x30 ?mftFnCreated .
   }
 
-  BIND(SUBSTR(STR(?lnkShortcutCreated), 1, 19) AS ?lnkShortcutCreatedSec)
-  BIND(SUBSTR(STR(?mftFnCreated), 1, 19) AS ?mftFnCreatedSec)
-
   FILTER(BOUND(?lnkShortcutCreated) && ?lnkShortcutCreated != ?mftSiCreated)
-  FILTER(?lnkShortcutCreatedSec = ?mftFnCreatedSec)
+  FILTER(STRSTARTS(STR(?mftFnCreated), SUBSTR(STR(?lnkShortcutCreated), 1, 19)))
 }
 ORDER BY ?lnkFile

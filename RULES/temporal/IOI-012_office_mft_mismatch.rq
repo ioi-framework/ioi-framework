@@ -1,9 +1,9 @@
 # rule_id:   IOI-012
-# version:   1.3
+# version:   1.5
 # status:    Validated
 # category:  temporal
 # title:     Office XML Metadata Timestamp Inconsistent with MFT
-# invariant: Office core.xml created time must not predate the MFT $SI created0x10 for the same file
+# invariant: Office core.xml created time must be consistent with the MFT $SI created0x10 for the same file
 # artifacts: office_xml, mft
 # added:     2025-10-01
 # changed:   1.0→1.1: fix facet names, two named graphs, cross-graph fileName join
@@ -12,16 +12,16 @@
 #                     join on normalized filePath (forward-slash, absolute) to eliminate Cartesian product
 #                     GROUP BY + MIN(?mftSiCreated) as fallback dedupe for residual filename-only matches
 #            1.3→1.4: compare XML and MFT $SI created timestamps at minute precision
+#            1.4→1.5: detect bidirectional mismatch (XML before OR after MFT $SI) at minute precision
 #
 PREFIX core:       <https://ontology.unifiedcyberontology.org/uco/core/>
 PREFIX observable: <https://ontology.unifiedcyberontology.org/uco/observable/>
 PREFIX ioi-ext:    <https://ioi-framework.github.io/ns/ioi-ext/>
 PREFIX xsd:        <http://www.w3.org/2001/XMLSchema#>
 
-# Detects: Office core.xml recorded a creation timestamp that is earlier by at
-# least one minute than the MFT $STANDARD_INFORMATION created0x10 for the same file.
-# This indicates the document metadata was backdated after creation —
-# a timestamp manipulation anti-forensic technique.
+# Detects: Office core.xml and MFT $STANDARD_INFORMATION created timestamps
+# disagree at minute precision for the same file (either direction).
+# This captures both metadata backdating and file-system timestomp scenarios.
 #
 # Graph IRIs use AF-012 as placeholder — SPARQLExecutor rewrites to the current case ID at runtime.
 # Load:
@@ -60,11 +60,11 @@ WHERE {
     FILTER(LCASE(STR(?mftFilePath)) = LCASE(STR(?filePath)))
   }
 
-  # Core detection: Office XML claims creation BEFORE the MFT entry was created.
+  # Core detection: Office XML and MFT $SI created timestamps do not match.
   # Compare at minute precision to avoid flagging normal sub-minute write skew.
   BIND(SUBSTR(REPLACE(STR(?xmlCreated), "T", " "), 1, 16) AS ?xmlCreatedMinute)
   BIND(SUBSTR(REPLACE(STR(?mftSiCreated), "T", " "), 1, 16) AS ?mftSiCreatedMinute)
-  FILTER(?xmlCreatedMinute < ?mftSiCreatedMinute)
+  FILTER(?xmlCreatedMinute != ?mftSiCreatedMinute)
 }
 GROUP BY ?officeEntry ?fileName ?filePath ?xmlCreated
 ORDER BY ?filePath
